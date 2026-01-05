@@ -7,8 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Order\Entities\" />
-    <Folder Include="Order\ValueObjects\" />
     <Folder Include="Payment\Entities\" />
     <Folder Include="Payment\ValueObjects\" />
   </ItemGroup>

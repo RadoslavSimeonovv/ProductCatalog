@@ -4,7 +4,7 @@ using ProductCatalog.Domain.Shared.ValueObjects;
 
 namespace ProductCatalog.Domain.Order.Entities;
 
-public class OrderItem : Entity
+public sealed class OrderItem : Entity
 {
     public OrderItem(Guid id) : base(id)
     {

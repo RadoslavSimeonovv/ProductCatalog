@@ -5,7 +5,7 @@ using ProductCatalog.Domain.Shared.ValueObjects;
 
 namespace ProductCatalog.Domain.Order.Entities;
 
-public class Order : Entity
+public sealed class Order : Entity
 {
     public Order(Guid id) : base(id)
     {
@@ -17,5 +17,6 @@ public class Order : Entity
 
     public OrderStatus Status { get; private set; }
 
-    public List<OrderItem> OrderItems { get; private set;  } = new();
+    private readonly List<OrderItem> _items = new();
+    public IReadOnlyCollection<OrderItem> Items => _items.AsReadOnly();
 }

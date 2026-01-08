@@ -4,9 +4,9 @@ using ProductCatalog.Domain.Shared.ValueObjects;
 
 namespace ProductCatalog.Domain.Payment.Entities;
 
-public class Payment : Entity
+public sealed class Payment : Entity
 {
-    public Payment(Guid id) : base(id)
+    public sealed Payment(Guid id) : base(id)
     {
     }
 

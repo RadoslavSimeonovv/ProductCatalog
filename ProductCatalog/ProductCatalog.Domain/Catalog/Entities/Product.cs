@@ -9,6 +9,7 @@ namespace PlanFlow.Domain.Catalog.Entities;
 /// </summary>
 public sealed class Product : Entity
 {
+    private readonly List<ProductFeature> _features = new();
     public Product(Guid id,
         Name name,
         Description description,
@@ -32,8 +33,6 @@ public sealed class Product : Entity
     public Guid CategoryId { get; private set; }
     public Sku Sku { get; private set; }
     public ProductStatus Status { get; private set; }
-
-    private readonly List<ProductFeature> _features = new();
     public IReadOnlyCollection<ProductFeature> Features => _features.AsReadOnly();
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }

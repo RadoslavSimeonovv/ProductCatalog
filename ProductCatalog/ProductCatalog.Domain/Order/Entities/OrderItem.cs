@@ -6,8 +6,18 @@ namespace ProductCatalog.Domain.Order.Entities;
 
 public sealed class OrderItem : Entity
 {
-    public OrderItem(Guid id) : base(id)
+    public OrderItem(Guid id,
+        Guid orderId,
+        Guid productId,
+        int quantity,
+        Money unitPrice,
+        Money unitTotal) : base(id)
     {
+        OrderId = orderId;
+        ProductId = productId;
+        Quantity = quantity;
+        UnitPrice = unitPrice;
+        UnitTotal = unitTotal;
     }
 
     public Order Order { get; private set; }

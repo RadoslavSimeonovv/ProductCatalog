@@ -1,0 +1,10 @@
+﻿using ProductCatalog.Domain.Catalog.Entities;
+
+namespace ProductCatalog.Domain.Catalog.Repositories;
+
+public interface IProductRepository
+{
+    Task<Product?> GetByIdAsync(Guid productId, CancellationToken cancellationToken = default);
+    Task<ICollection<Product>> GetAllAsync(CancellationToken cancellationToken = default);
+    void Add(Product product);
+}

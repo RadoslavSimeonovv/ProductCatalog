@@ -1,5 +1,5 @@
-﻿using PlanFlow.Domain.Catalog.Entities;
-using ProductCatalog.Domain.Abstractions;
+﻿using ProductCatalog.Domain.Abstractions;
+using ProductCatalog.Domain.Catalog.Entities;
 using ProductCatalog.Domain.Shared.ValueObjects;
 
 namespace ProductCatalog.Domain.Order.Entities;

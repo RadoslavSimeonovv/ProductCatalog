@@ -1,7 +1,7 @@
 ﻿using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Catalog.ValueObjects;
 
-namespace PlanFlow.Domain.Catalog.Entities;
+namespace ProductCatalog.Domain.Catalog.Entities;
 
 /// <summary>
 

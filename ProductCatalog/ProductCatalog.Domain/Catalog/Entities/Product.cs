@@ -3,7 +3,7 @@ using ProductCatalog.Domain.Catalog.Enums;
 using ProductCatalog.Domain.Catalog.ValueObjects;
 using ProductCatalog.Domain.Shared.ValueObjects;
 
-namespace PlanFlow.Domain.Catalog.Entities;
+namespace ProductCatalog.Domain.Catalog.Entities;
 
 /// <summary>
 /// </summary>

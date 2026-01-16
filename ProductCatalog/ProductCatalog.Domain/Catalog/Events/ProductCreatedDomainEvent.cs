@@ -9,4 +9,6 @@ namespace ProductCatalog.Domain.Catalog.Events;
 /// <param name="occurredAtUtc"></param>
 public sealed record ProductCreatedDomainEvent(
     Guid productId,
+    Guid categoryId,
+    string sku,
     DateTime occurredAtUtc) : IDomainEvent;

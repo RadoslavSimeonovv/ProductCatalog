@@ -5,6 +5,6 @@
 /// </summary>
 /// <param name="productId"></param>
 /// <param name="occurredAtUtc"></param>
-public sealed record ProductActivedDomainEvent(
+public sealed record ProductActivatedDomainEvent(
     Guid productId,
     DateTime occurredAtUtc) : IDomainEvent;

@@ -7,6 +7,6 @@ namespace ProductCatalog.Domain.Catalog.Events;
 /// </summary>
 /// <param name="productId"></param>
 /// <param name="occurredAtUtc"></param>
-public sealed record ProductDeactivedDomainEvent(
+public sealed record ProductDeactivatedDomainEvent(
     Guid productId, 
     DateTime occurredAtUtc) : IDomainEvent;

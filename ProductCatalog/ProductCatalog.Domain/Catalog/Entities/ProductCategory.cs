@@ -1,5 +1,4 @@
 ﻿using ProductCatalog.Domain.Abstractions;
-using ProductCatalog.Domain.Catalog.ValueObjects;
 
 namespace ProductCatalog.Domain.Catalog.Entities;
 
@@ -9,15 +8,15 @@ public sealed class ProductCategory : Entity
 {
     private readonly List<Product> _products = new();
     public ProductCategory(Guid id,
-        Name name,
-        Description description)
+        string name,
+        string description)
         : base(id)
     {
         Name = name;
         Description = description;
     }
-    public Name Name { get; private set; }
-    public Description? Description { get; private set; }
+    public string Name { get; private set; }
+    public string? Description { get; private set; }
     public IReadOnlyCollection<Product> Products => _products.AsReadOnly();
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }

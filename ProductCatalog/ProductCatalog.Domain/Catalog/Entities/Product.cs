@@ -12,8 +12,8 @@ public sealed class Product : Entity
 {
     private readonly List<ProductFeature> _features = new();
     public Product(Guid id,
-        Name name,
-        Description description,
+        string name,
+        string description,
         Money price,
         Guid categoryId,
         Sku sku,
@@ -27,8 +27,8 @@ public sealed class Product : Entity
         Sku = sku;
         Status = ProductStatus.Draft;
     }
-    public Name Name { get; private set; }
-    public Description? Description { get; private set; }
+    public string Name { get; private set; }
+    public string? Description { get; private set; }
     public Money Price { get; private set; }
     public ProductCategory? Category { get; private set; }
     public Guid CategoryId { get; private set; }
@@ -48,8 +48,8 @@ public sealed class Product : Entity
     /// <param name="sku"></param>
     /// <returns></returns>
     public static Product Create(
-        Name name,
-        Description description,
+        string name,
+        string description,
         Money price,
         Guid categoryId,
         Sku sku)
@@ -150,5 +150,67 @@ public sealed class Product : Entity
 
         RaiseDomainEvent(new ProductDiscontinuedDomainEvent(
             Id, dateTimeNow));
+    }
+
+    /// <summary>
+    /// Changes the category of the product to the specified category identifier.
+    /// </summary>
+    /// <remarks>Raises a domain event to signal that the product's category has changed. The product's last
+    /// updated timestamp is also set to the current UTC time.</remarks>
+    /// <param name="newCategoryId">The unique identifier of the new category to assign to the product. Must not be equal to the current category
+    /// identifier.</param>
+    public void ChangeCategory(Guid newCategoryId)
+    {
+        if (newCategoryId == Guid.Empty)
+            throw new ArgumentException("CategoryId cannot be empty.", nameof(newCategoryId));
+
+        if (CategoryId == newCategoryId)
+            return;
+
+        if (Status == ProductStatus.Discontinued)
+            throw new InvalidOperationException("Discontinued products cannot change category.");
+
+        var oldCategoryId = CategoryId;
+        var dateTimeNow = DateTime.UtcNow;
+
+        CategoryId = newCategoryId;
+        UpdatedAt = dateTimeNow;
+
+        RaiseDomainEvent(new ProductCategoryChangedDomainEvent(
+            Id, oldCategoryId, newCategoryId, dateTimeNow));
+    }
+
+    /// <summary>
+    /// Adds a new feature to the product with the specified identifier, name, value, and display order.
+    /// </summary>
+    /// <param name="featureId">The unique identifier of the feature to add. Cannot be <see cref="Guid.Empty"/>.</param>
+    /// <param name="name">The name of the feature. Cannot be null or empty.</param>
+    /// <param name="value">The value associated with the feature. Cannot be null or empty.</param>
+    /// <param name="displayOrder">The position in which the feature should be displayed relative to other features.</param>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="featureId"/> is <see cref="Guid.Empty"/>, or if <paramref name="name"/> or <paramref
+    /// name="value"/> is null or empty.</exception>
+    public void AddFeature(Guid featureId, string name, string value, int displayOrder)
+    {
+        if (featureId == Guid.Empty)
+            throw new ArgumentException("FeatureId cannot be empty.", nameof(featureId));
+
+        if (string.IsNullOrEmpty(name))
+            throw new ArgumentException("Feature name cannot be null or empty.", nameof(name));
+
+        if (string.IsNullOrEmpty(value))
+            throw new ArgumentException("Feature value cannot be null or empty.", nameof(value));
+
+        if (_features.Any(f => f.Id == featureId))
+            throw new ArgumentException($"A feature with the ID '{featureId}' already exists for this product.", nameof(featureId));
+
+        var feature = new ProductFeature(featureId, name, value, displayOrder, Id);
+
+        _features.Add(feature);
+
+        var dateTimeNow = DateTime.UtcNow;
+        UpdatedAt = dateTimeNow;
+
+        RaiseDomainEvent(new ProductFeatureAddedDomainEvent(
+            Id, feature.Id, feature.Name, feature.Value, feature.DisplayOrder, dateTimeNow));
     }
 }

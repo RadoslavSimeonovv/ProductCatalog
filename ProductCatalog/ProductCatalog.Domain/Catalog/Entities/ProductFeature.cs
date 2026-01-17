@@ -9,18 +9,21 @@ namespace ProductCatalog.Domain.Catalog.Entities;
 public sealed class ProductFeature : Entity
 {
     public ProductFeature(Guid id,
-        Name name,
-        Description description,
+        string name,
+        string value,
+        int displayOrder,
         Guid productId)
         : base(id)
     {
         Name = name;
-        Description = description;
+        Value = value;
+        DisplayOrder = displayOrder;
         ProductId = productId;
     }
 
-    public Name Name { get; private set; }
-    public Description? Description { get; private set; }
+    public string Name { get; private set; }
+    public string Value { get; private set; }
+    public int DisplayOrder { get; private set; }
     public Product? Product { get; private set; }
     public Guid ProductId { get; private set; }
     public DateTime CreatedAt { get; private set; }

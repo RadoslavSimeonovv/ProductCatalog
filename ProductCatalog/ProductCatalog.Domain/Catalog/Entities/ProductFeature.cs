@@ -1,5 +1,4 @@
 ﻿using ProductCatalog.Domain.Abstractions;
-using ProductCatalog.Domain.Catalog.ValueObjects;
 
 namespace ProductCatalog.Domain.Catalog.Entities;
 
@@ -28,4 +27,12 @@ public sealed class ProductFeature : Entity
     public Guid ProductId { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
+
+    internal void UpdateValue(string newValue)
+    {
+        if (string.IsNullOrEmpty(newValue))
+            throw new ArgumentException("Feature value cannot be null or empty.", nameof(newValue));
+        
+        Value = newValue;
+    }
 }

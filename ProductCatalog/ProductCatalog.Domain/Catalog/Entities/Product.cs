@@ -85,6 +85,31 @@ public sealed class Product : Entity
     }
 
     /// <summary>
+    /// Updates the product's price to the specified value and records the change as a domain event.
+    /// </summary>
+    /// <remarks>This method updates the product's price and sets the last updated timestamp. It also raises a
+    /// domain event to notify subscribers of the price change. No action is taken if the new price is equal to the
+    /// current price.</remarks>
+    /// <param name="newPrice">The new price to assign to the product. Must not be equal to the current price.</param>
+    public void ChangePrice(Money newPrice)
+    {
+        if (newPrice is null)
+            throw new ArgumentNullException(nameof(newPrice));
+
+        if (Price == newPrice)
+            return;
+
+        var oldPrice = Price;
+        Price = newPrice;
+
+        var dateTimeNow = DateTime.UtcNow;
+        UpdatedAt = dateTimeNow;
+
+        RaiseDomainEvent(new ProductPriceChangedDomainEvent(
+            Id, oldPrice, newPrice, dateTimeNow));
+    }
+
+    /// <summary>
     /// Activates the product by setting its status to active and raising a domain event if the product is in a draft or
     /// inactive state.
     /// </summary>
@@ -212,5 +237,67 @@ public sealed class Product : Entity
 
         RaiseDomainEvent(new ProductFeatureAddedDomainEvent(
             Id, feature.Id, feature.Name, feature.Value, feature.DisplayOrder, dateTimeNow));
+    }
+
+    /// <summary>
+    /// Updates the value of an existing feature identified by its unique identifier.   
+    /// </summary>
+    /// <remarks>If the new value is the same as the current value, no update is performed and no domain event
+    /// is raised. The method updates the <c>UpdatedAt</c> property and raises a domain event when the feature value
+    /// changes.</remarks>
+    /// <param name="featureId">The unique identifier of the feature to update.</param>
+    /// <param name="newValue">The new value to assign to the feature. Cannot be null or empty.</param>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="newValue"/> is null or empty, or if a feature with the specified <paramref
+    /// name="featureId"/> does not exist.</exception>
+    public void UpdateFeatureValue(Guid featureId, string newValue)
+    {
+        if (featureId == Guid.Empty)
+            throw new ArgumentException("FeatureId cannot be empty.", nameof(featureId));
+
+        if (string.IsNullOrWhiteSpace(newValue))
+            throw new ArgumentException("Feature value cannot be null or empty.", nameof(newValue));
+
+        var feature = _features.SingleOrDefault(f => f.Id == featureId);
+
+        if (feature == null)
+            throw new InvalidOperationException($"Feature with ID '{featureId}' not found.");
+
+        var trimmedNewValue = newValue.Trim();
+        if (feature.Value == trimmedNewValue)
+            return;
+
+        var oldValue = feature.Value;
+
+        feature.UpdateValue(newValue);
+
+        var dateTimeNow = DateTime.UtcNow;
+        UpdatedAt = dateTimeNow;
+
+        RaiseDomainEvent(new ProductFeatureUpdatedDomainEvent(
+            Id, feature.Id, feature.Name, oldValue, newValue, dateTimeNow));
+    }
+
+    /// <summary>
+    /// Removes the feature with the specified identifier from the product.
+    /// </summary>
+    /// <param name="featureId">The unique identifier of the feature to remove. Cannot be empty.</param>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="featureId"/> is empty or if no feature with the specified identifier exists.</exception>
+    public void RemoveFeature(Guid featureId)
+    {
+        if (featureId == Guid.Empty)
+            throw new ArgumentException("FeatureId cannot be empty.", nameof(featureId));
+
+        var feature = _features.SingleOrDefault(f => f.Id == featureId);
+
+        if (feature == null)
+            throw new ArgumentException($"Feature with ID '{featureId}' not found.", nameof(featureId));
+
+        _features.Remove(feature);
+
+        var dateTimeNow = DateTime.UtcNow;
+        UpdatedAt = dateTimeNow;
+
+        RaiseDomainEvent(new ProductFeatureRemovedDomainEvent(
+            Id, feature.Id, feature.Name, dateTimeNow));
     }
 }

@@ -11,13 +11,15 @@ public sealed class ProductFeature : Entity
         string name,
         string value,
         int displayOrder,
-        Guid productId)
+        Guid productId,
+        DateTime createdAt)
         : base(id)
     {
         Name = name;
         Value = value;
         DisplayOrder = displayOrder;
         ProductId = productId;
+        CreatedAt = createdAt;
     }
 
     public string Name { get; private set; }

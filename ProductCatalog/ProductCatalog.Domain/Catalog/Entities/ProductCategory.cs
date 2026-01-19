@@ -9,11 +9,13 @@ public sealed class ProductCategory : Entity
     private readonly List<Product> _products = new();
     public ProductCategory(Guid id,
         string name,
-        string description)
+        string description,
+        DateTime createdAt)
         : base(id)
     {
         Name = name;
         Description = description;
+        CreatedAt = createdAt;
     }
     public string Name { get; private set; }
     public string? Description { get; private set; }

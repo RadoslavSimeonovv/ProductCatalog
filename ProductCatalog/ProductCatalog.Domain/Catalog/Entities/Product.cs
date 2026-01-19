@@ -26,6 +26,7 @@ public sealed class Product : Entity
         CategoryId = categoryId;
         Sku = sku;
         Status = ProductStatus.Draft;
+        CreatedAt = createdAt;
     }
     public string Name { get; private set; }
     public string? Description { get; private set; }
@@ -228,11 +229,12 @@ public sealed class Product : Entity
         if (_features.Any(f => f.Id == featureId))
             throw new ArgumentException($"A feature with the ID '{featureId}' already exists for this product.", nameof(featureId));
 
-        var feature = new ProductFeature(featureId, name, value, displayOrder, Id);
+        var dateTimeNow = DateTime.UtcNow;
+
+        var feature = new ProductFeature(featureId, name, value, displayOrder, Id, dateTimeNow);
 
         _features.Add(feature);
 
-        var dateTimeNow = DateTime.UtcNow;
         UpdatedAt = dateTimeNow;
 
         RaiseDomainEvent(new ProductFeatureAddedDomainEvent(

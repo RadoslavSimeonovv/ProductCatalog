@@ -1,6 +1,6 @@
 ﻿namespace ProductCatalog.Domain.Shared.ValueObjects;
 
-public record Money
+public sealed record Money
 {
     public Money(decimal amount, Currency currency)
     {
@@ -11,15 +11,23 @@ public record Money
         Currency = currency;
     }
 
-    public decimal Amount { get; private set; }
-    public Currency Currency { get; private set; }
+    public decimal Amount { get; }
+    public Currency Currency { get; }
 
-    public static Money operator +(Money first, Money second)
+    public static Money operator +(Money left, Money right)
     {
-        if (first.Currency != second.Currency)
-            throw new InvalidOperationException("Cannot add money with different currencies.");
+        if (left.Currency != right.Currency)
+            throw new InvalidOperationException("Cannot add amounts with different currencies.");
 
-        return new Money(first.Amount + second.Amount, first.Currency);
+        return new Money(left.Amount + right.Amount, left.Currency);
+    }
+
+    public static Money operator *(Money money, int quantity)
+    {
+        if (quantity < 0)
+            throw new ArgumentOutOfRangeException(nameof(quantity), "Quantity must be non-negative.");
+
+        return new Money(money.Amount * quantity, money.Currency);
     }
 
     public static Money Zero(Currency currency) => new(0m, currency);

@@ -11,7 +11,8 @@ namespace ProductCatalog.Domain.Payment.Events;
 /// <param name="Amount"></param>
 /// <param name="FailureReason"></param>
 /// <param name="OccurredAtUtc"></param>
-public sealed record PaymentFailedDomainEvent(Guid PaymentId,
+public sealed record PaymentFailedDomainEvent(
+    Guid PaymentId,
     Guid OrderId,
     Money Amount,
     string? FailureReason,

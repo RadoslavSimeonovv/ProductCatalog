@@ -1,5 +1,6 @@
 ﻿using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Order.Enums;
+using ProductCatalog.Domain.Order.Errors;
 using ProductCatalog.Domain.Order.Events;
 using ProductCatalog.Domain.Shared.ValueObjects;
 
@@ -29,65 +30,69 @@ public sealed class Order : Entity
     public IReadOnlyCollection<OrderItem> Items => _items.AsReadOnly();
 
     /// <summary>
-    /// Factory method to create a new Order
+    /// Creates a new order for the specified customer with the provided order items.
     /// </summary>
-    /// <param name="customerEmail"></param>
-    /// <param name="items"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    /// <exception cref="ArgumentNullException"></exception>
-    /// <exception cref="InvalidOperationException"></exception>
-    public static Order Create(string customerEmail, List<OrderItem> items)
+    /// <remarks>The method trims leading and trailing white space from the customer email before creating the
+    /// order. All order items must use the same currency; otherwise, the creation fails with a currency mismatch
+    /// error.</remarks>
+    /// <param name="customerEmail">The email address of the customer placing the order. Cannot be null, empty, or consist only of white-space
+    /// characters.</param>
+    /// <param name="items">The list of items to include in the order. Cannot be null or empty. All items must use the same currency.</param>
+    /// <returns>A result containing the created order if successful; otherwise, a failure result with the appropriate error if
+    /// the input is invalid or the items have mismatched currencies.</returns>
+    public static Result<Order> Create(string customerEmail, List<OrderItem> items)
     {
         if (string.IsNullOrWhiteSpace(customerEmail))
-            throw new ArgumentException("Customer email is required.", nameof(customerEmail));
+            return Result.Failure<Order>(OrderErrors.InvalidCustomerEmail);
 
         if (items is null)
-            throw new ArgumentNullException(nameof(items));
+            return Result.Failure<Order>(OrderErrors.OrderItemsCannotBeNull);
 
         if (items.Count == 0)
-            throw new InvalidOperationException("Order must contain at least one item.");
+            return Result.Failure<Order>(OrderErrors.EmptyOrder);
 
-        var dateTimeNow = DateTime.UtcNow;
-
+        var customerEmailTrimmed = customerEmail.Trim();
         var orderItems = new List<OrderItem>(items);
-        var orderCurrency = items[0].LineTotal.Currency;
+        var orderCurrency = orderItems[0].LineTotal.Currency;
         var orderTotal = Money.Zero(orderCurrency);
 
         foreach (var item in orderItems)
         {
             if (item.LineTotal.Currency != orderCurrency)
-                throw new InvalidOperationException("All order items must have the same currency.");
+                return Result.Failure<Order>(OrderErrors.CurrencyMismatch);
 
             orderTotal += item.LineTotal;
         }
 
+        var dateTimeNow = DateTime.UtcNow;
+
         var order = new Order(Guid.NewGuid(),
-            customerEmail,
+            customerEmailTrimmed,
             orderTotal,
-            items,
+            orderItems,
             dateTimeNow);
 
         order.RaiseDomainEvent(new OrderCreatedDomainEvent(
             order.Id, order.CustomerEmail, order.TotalAmount, dateTimeNow));
 
-        return order;
+        return Result.Success(order);
     }
 
     /// <summary>
-    /// Submits the order for payment processing by transitioning its status to awaiting payment.
+    /// Submits the order for payment processing if it is in the created state and contains at least one item.
     /// </summary>
-    /// <remarks>This method should be called only once per order, after it has been created and before
-    /// payment is initiated. Upon successful submission, a domain event is raised to signal that the order is ready for
-    /// payment.</remarks>
-    /// <exception cref="InvalidOperationException">Thrown if the order status is not <see cref="OrderStatus.Created"/>.</exception>
-    public void SubmitForPayment()
+    /// <remarks>If the submission is successful, the order status is updated to awaiting payment and a domain
+    /// event is raised. This method does not initiate payment itself; it prepares the order for the payment
+    /// process.</remarks>
+    /// <returns>A <see cref="Result"/> indicating whether the order was successfully submitted for payment. Returns a failure
+    /// result if the order is not in the created state or contains no items.</returns>
+    public Result SubmitForPayment()
     {
         if (Status != OrderStatus.Created)
-            throw new InvalidOperationException("Only created orders can be submitted for payment.");
+            return Result.Failure(OrderErrors.NotCreated);
 
         if (_items.Count == 0)
-            throw new InvalidOperationException("Order must contain at least one item.");
+            return Result.Failure(OrderErrors.EmptyOrder);
 
         var dateTimeNow = DateTime.UtcNow;
         Status = OrderStatus.AwaitingPayment;
@@ -95,18 +100,21 @@ public sealed class Order : Entity
 
         RaiseDomainEvent(new OrderSubmittedForPaymentDomainEvent(
             Id, TotalAmount, dateTimeNow));
+
+        return Result.Success();
     }
 
     /// <summary>
     /// Marks the order as paid if it is currently awaiting payment.
     /// </summary>
-    /// <remarks>This method updates the order status to <see cref="OrderStatus.Paid"/> and records the
-    /// payment time. A domain event is raised to signal that the order has been paid.</remarks>
-    /// <exception cref="InvalidOperationException">Thrown if the order status is not <see cref="OrderStatus.AwaitingPayment"/>.</exception>
-    public void MarkAsPaid()
+    /// <remarks>This method updates the order status to paid and raises an order paid domain event. If the
+    /// order is not awaiting payment, the status is not changed and a failure result is returned.</remarks>
+    /// <returns>A <see cref="Result"/> indicating whether the operation succeeded. Returns a failure result if the order is not
+    /// in the awaiting payment status.</returns>
+    public Result MarkAsPaid()
     {
         if (Status != OrderStatus.AwaitingPayment)
-            throw new InvalidOperationException("Only orders awaiting payment can be marked as paid.");
+            return Result.Failure(OrderErrors.NotAwaitingPayment);
 
         var dateTimeNow = DateTime.UtcNow;
         Status = OrderStatus.Paid;
@@ -114,24 +122,29 @@ public sealed class Order : Entity
 
         RaiseDomainEvent(new OrderPaidDomainEvent(
             Id, TotalAmount, dateTimeNow));
+
+        return Result.Success();
     }
 
     /// <summary>
-    /// Cancels the order and updates its status to cancelled.
+    /// Marks the order as cancelled if it is in a cancellable state (created or awaiting payment).
     /// </summary>
-    /// <remarks>After cancellation, a domain event is raised to notify other components of the change. Only
-    /// orders that are in the Created or AwaitingPayment status can be cancelled; attempting to cancel orders in other
-    /// states will result in an exception.</remarks>
-    /// <param name="reason">The reason for cancelling the order. This value may be null or empty if no specific reason is provided.</param>
-    /// <exception cref="InvalidOperationException">Thrown if the order status is not Created or AwaitingPayment.</exception>
-    public void Cancel(string? reason)
+    /// <param name="reason"></param>
+    /// <returns> A <see cref="Result"/> indicating where the operation succeeded. Returns a failure result if the order is not
+    /// in a created or awaiting payment state.</returns>
+    public Result Cancel(string? reason)
     {
+        if (Status == OrderStatus.Cancelled)
+            return Result.Failure(OrderErrors.AlreadyCancelled);
+
+        if (Status == OrderStatus.Paid)
+            return Result.Failure(OrderErrors.CannotCancelPaidOrder);
+
         if (Status != OrderStatus.Created &&
             Status != OrderStatus.AwaitingPayment)
-            throw new InvalidOperationException("Only created or awaiting payment orders can be cancelled.");
+            return Result.Failure(OrderErrors.InvalidState);
 
-        if (Status == OrderStatus.Cancelled)
-            throw new InvalidOperationException("Cancelled orders cannot be cancelled again.");
+        reason = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
 
         var dateTimeNow = DateTime.UtcNow;
         Status = OrderStatus.Cancelled;
@@ -139,5 +152,7 @@ public sealed class Order : Entity
 
         RaiseDomainEvent(new OrderCancelledDomainEvent(
             Id, reason, dateTimeNow));
+
+        return Result.Success();
     }
 }

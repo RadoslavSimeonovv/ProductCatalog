@@ -1,5 +1,6 @@
 ﻿using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Catalog.Enums;
+using ProductCatalog.Domain.Catalog.Errors;
 using ProductCatalog.Domain.Catalog.Events;
 using ProductCatalog.Domain.Catalog.ValueObjects;
 using ProductCatalog.Domain.Shared.ValueObjects;
@@ -72,33 +73,38 @@ public sealed class Product : Entity
     }
 
     /// <summary>
-    /// Updates the product's status to the specified value and records the time of the change.
+    /// Attempts to change the product's status to the specified value. 
     /// </summary>
-    /// <param name="newStatus">The new status to assign to the product. If the current status is already equal to this value, no update occurs.</param>
-    /// <param name="nowUtc">The UTC date and time when the status change is recorded.</param>
-    public void ChangeStatus(ProductStatus newStatus, DateTime nowUtc)
+    /// <param name="newStatus">The new status to assign to the product.</param>
+    /// <param name="nowUtc">The current date and time in UTC to record as the update timestamp.</param>
+    /// <returns>A result indicating whether the status was changed. Returns a failure result if the new status is the same as
+    /// the current status; otherwise, returns a success result.</returns>
+    private Result ChangeStatus(ProductStatus newStatus, DateTime nowUtc)
     {
         if (Status == newStatus)
-            return;
+            return Result.Failure(ProductErrors.StatusUnchanged);
 
         Status = newStatus;
         UpdatedAt = nowUtc;
+
+        return Result.Success();
     }
 
     /// <summary>
-    /// Updates the product's price to the specified value and records the change as a domain event.
+    /// Attempts to change the product's price to the specified value.
     /// </summary>
-    /// <remarks>This method updates the product's price and sets the last updated timestamp. It also raises a
-    /// domain event to notify subscribers of the price change. No action is taken if the new price is equal to the
-    /// current price.</remarks>
-    /// <param name="newPrice">The new price to assign to the product. Must not be equal to the current price.</param>
-    public void ChangePrice(Money newPrice)
+    /// <remarks>If the price is changed, a domain event is raised and the product's update timestamp is set
+    /// to the current UTC time.</remarks>
+    /// <param name="newPrice">The new price to assign to the product. Cannot be null.</param>
+    /// <returns>A result indicating whether the price was successfully changed. Returns a failure result if the new price is
+    /// invalid or unchanged.</returns>
+    public Result ChangePrice(Money newPrice)
     {
         if (newPrice is null)
-            throw new ArgumentNullException(nameof(newPrice));
+            return Result.Failure(ProductErrors.InvalidPrice);
 
-        if (Price == newPrice)
-            return;
+        if (Price.Equals(newPrice))
+            return Result.Failure(ProductErrors.PriceUnchanged);
 
         var oldPrice = Price;
         Price = newPrice;
@@ -108,93 +114,114 @@ public sealed class Product : Entity
 
         RaiseDomainEvent(new ProductPriceChangedDomainEvent(
             Id, oldPrice, newPrice, dateTimeNow));
+
+        return Result.Success();
     }
 
     /// <summary>
-    /// Activates the product by setting its status to active and raising a domain event if the product is in a draft or
-    /// inactive state.
+    /// Attempts to publish the product by changing its status to active.
     /// </summary>
-    /// <remarks>This method has no effect if the product is already active or if its status is not draft or
-    /// inactive. After activation, the product's update timestamp is set to the current UTC time, and a domain event is
-    /// raised to signal the activation. This method should be called when the product is ready to be made
-    /// available.</remarks>
-    public void Publish()
+    /// <remarks>This method raises a domain event if the product is successfully published. The product can
+    /// only be published if its current status is Draft or Inactive.</remarks>
+    /// <returns>A <see cref="Result"/> indicating the outcome of the operation. Returns a failure result if the product is
+    /// already active or in an invalid status; otherwise, returns a success result.</returns>
+    public Result Publish()
     {
         if (Status == ProductStatus.Active)
         {
-            return;
+            return Result.Failure(ProductErrors.AlreadyActive);
         }
         if (Status != ProductStatus.Draft && Status != ProductStatus.Inactive)
         {
-            return;
+            return Result.Failure(ProductErrors.InvalidStatus);
         }
 
         var dateTimeNow = DateTime.UtcNow;
 
-        ChangeStatus(ProductStatus.Active, dateTimeNow);
+        var statusResult = ChangeStatus(ProductStatus.Active, dateTimeNow);
+
+        if (statusResult.IsFailure)
+            return statusResult;
 
         RaiseDomainEvent(new ProductActivatedDomainEvent(
             Id, dateTimeNow));
+
+        return Result.Success();
     }
 
     /// <summary>
-    /// Marks the product as inactive if it is currently active.
+    /// Deactivates the product if it is currently active.
     /// </summary>
-    /// <remarks>If the product is already inactive or not in the active state, this method has no effect.
-    /// Calling this method updates the product's status and raises a domain event to signal the deactivation.</remarks>
-    public void Deactivate()
+    /// <remarks>This method raises a domain event when the product is successfully deactivated. If the
+    /// product is already inactive, no changes are made.</remarks>
+    /// <returns>A <see cref="Result"/> indicating whether the deactivation was successful. Returns a failure result if the
+    /// product is not active or if the status change fails.</returns>
+    public Result Deactivate()
     {
         if (Status != ProductStatus.Active)
         {
-            return;
+            return Result.Failure(ProductErrors.NotActive);
         }
 
         var dateTimeNow = DateTime.UtcNow;
 
-        ChangeStatus(ProductStatus.Inactive, dateTimeNow);
+        var statusResult = ChangeStatus(ProductStatus.Inactive, dateTimeNow);
+
+        if (statusResult.IsFailure)
+            return statusResult;
 
         RaiseDomainEvent(new ProductDeactivatedDomainEvent(
             Id, dateTimeNow));
+
+        return Result.Success();
     }
 
     /// <summary>
-    /// Marks the product as discontinued and raises a domain event to signal the change.
+    /// Marks the product as discontinued if it is not already discontinued.
     /// </summary>
-    /// <remarks>If the product is already discontinued, this method has no effect. After calling this method,
-    /// the product's status is set to discontinued, the update timestamp is refreshed, and a domain event is raised to
-    /// notify interested parties of the discontinuation.</remarks>
-    public void Discontinue()
+    /// <remarks>This method raises a domain event when the product is successfully discontinued. Once
+    /// discontinued, the product's status cannot be reverted using this method.</remarks>
+    /// <returns>A <see cref="Result"/> indicating whether the operation succeeded. Returns a failure result if the product is
+    /// already discontinued.</returns>
+    public Result Discontinue()
     {
         if (Status == ProductStatus.Discontinued)
         {
-            return;
+            return Result.Failure(ProductErrors.AlreadyDiscontinued);
         }
 
         var dateTimeNow = DateTime.UtcNow;
 
-        ChangeStatus(ProductStatus.Discontinued, dateTimeNow);
+        var statusResult = ChangeStatus(ProductStatus.Discontinued, dateTimeNow);
+
+        if (statusResult.IsFailure)
+            return statusResult;
 
         RaiseDomainEvent(new ProductDiscontinuedDomainEvent(
             Id, dateTimeNow));
+
+        return Result.Success();
     }
 
     /// <summary>
     /// Changes the category of the product to the specified category identifier.
     /// </summary>
-    /// <remarks>Raises a domain event to signal that the product's category has changed. The product's last
-    /// updated timestamp is also set to the current UTC time.</remarks>
-    /// <param name="newCategoryId">The unique identifier of the new category to assign to the product. Must not be equal to the current category
-    /// identifier.</param>
-    public void ChangeCategory(Guid newCategoryId)
+    /// <remarks>This method updates the product's category and modification timestamp if the operation is
+    /// valid. If the category is changed, a domain event is raised to signal the update. The operation cannot be
+    /// performed if the product is discontinued.</remarks>
+    /// <param name="newCategoryId">The unique identifier of the new category to assign to the product. Cannot be <see cref="Guid.Empty"/>.</param>
+    /// <returns>A <see cref="Result"/> indicating whether the category change was successful. Returns a failure result if the
+    /// new category identifier is invalid, unchanged, or if the product is discontinued.</returns>
+    public Result ChangeCategory(Guid newCategoryId)
     {
         if (newCategoryId == Guid.Empty)
-            throw new ArgumentException("CategoryId cannot be empty.", nameof(newCategoryId));
+            return Result.Failure(ProductErrors.InvalidCategoryId);
 
         if (CategoryId == newCategoryId)
-            return;
+            return Result.Failure(ProductErrors.CategoryUnchanged);
 
         if (Status == ProductStatus.Discontinued)
-            throw new InvalidOperationException("Discontinued products cannot change category.");
+            return Result.Failure(ProductErrors.DiscontinuedCannotBeModified);
 
         var oldCategoryId = CategoryId;
         var dateTimeNow = DateTime.UtcNow;
@@ -204,34 +231,48 @@ public sealed class Product : Entity
 
         RaiseDomainEvent(new ProductCategoryChangedDomainEvent(
             Id, oldCategoryId, newCategoryId, dateTimeNow));
+
+        return Result.Success();
     }
 
     /// <summary>
     /// Adds a new feature to the product with the specified identifier, name, value, and display order.
     /// </summary>
-    /// <param name="featureId">The unique identifier of the feature to add. Cannot be <see cref="Guid.Empty"/>.</param>
-    /// <param name="name">The name of the feature. Cannot be null or empty.</param>
-    /// <param name="value">The value associated with the feature. Cannot be null or empty.</param>
-    /// <param name="displayOrder">The position in which the feature should be displayed relative to other features.</param>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="featureId"/> is <see cref="Guid.Empty"/>, or if <paramref name="name"/> or <paramref
-    /// name="value"/> is null or empty.</exception>
-    public void AddFeature(Guid featureId, string name, string value, int displayOrder)
+    /// <remarks>This method does not allow adding features to discontinued products. Feature names are
+    /// compared case-insensitively to prevent duplicates.</remarks>
+    /// <param name="featureId">The unique identifier for the feature to add. Must not be <see cref="Guid.Empty"/> and must not duplicate an
+    /// existing feature's identifier.</param>
+    /// <param name="name">The name of the feature. Cannot be null, empty, or whitespace, and must not duplicate an existing feature name
+    /// (case-insensitive).</param>
+    /// <param name="value">The value associated with the feature. Cannot be null, empty, or whitespace.</param>
+    /// <param name="displayOrder">The position at which the feature should be displayed relative to other features.</param>
+    /// <returns>A <see cref="Result"/> indicating whether the feature was successfully added. Returns a failure result if the
+    /// input is invalid, the feature already exists, or the product cannot be modified.</returns>
+    public Result AddFeature(Guid featureId, string name, string value, int displayOrder)
     {
         if (featureId == Guid.Empty)
-            throw new ArgumentException("FeatureId cannot be empty.", nameof(featureId));
+            return Result.Failure(ProductErrors.InvalidFeatureId);
 
-        if (string.IsNullOrEmpty(name))
-            throw new ArgumentException("Feature name cannot be null or empty.", nameof(name));
+        if (string.IsNullOrWhiteSpace(name))
+            return Result.Failure(ProductErrors.InvalidFeatureName);
 
-        if (string.IsNullOrEmpty(value))
-            throw new ArgumentException("Feature value cannot be null or empty.", nameof(value));
+        if (string.IsNullOrWhiteSpace(value))
+            return Result.Failure(ProductErrors.InvalidFeatureValue);
+
+        if (Status == ProductStatus.Discontinued)
+            return Result.Failure(ProductErrors.DiscontinuedCannotBeModified);
 
         if (_features.Any(f => f.Id == featureId))
-            throw new ArgumentException($"A feature with the ID '{featureId}' already exists for this product.", nameof(featureId));
+            return Result.Failure(ProductErrors.DuplicateFeatureId);
 
+        var featureName = name.Trim();
+        if (_features.Any(f => f.Name.Equals(featureName, StringComparison.OrdinalIgnoreCase)))
+            return Result.Failure(ProductErrors.FeatureAlreadyExists);
+
+        var featureValue = value.Trim();
         var dateTimeNow = DateTime.UtcNow;
 
-        var feature = new ProductFeature(featureId, name, value, displayOrder, Id, dateTimeNow);
+        var feature = new ProductFeature(featureId, featureName, featureValue, displayOrder, Id, dateTimeNow);
 
         _features.Add(feature);
 
@@ -239,60 +280,74 @@ public sealed class Product : Entity
 
         RaiseDomainEvent(new ProductFeatureAddedDomainEvent(
             Id, feature.Id, feature.Name, feature.Value, feature.DisplayOrder, dateTimeNow));
+
+        return Result.Success();
     }
 
     /// <summary>
-    /// Updates the value of an existing feature identified by its unique identifier.   
+    /// Updates the value of a product feature identified by the specified feature ID.
     /// </summary>
-    /// <remarks>If the new value is the same as the current value, no update is performed and no domain event
-    /// is raised. The method updates the <c>UpdatedAt</c> property and raises a domain event when the feature value
-    /// changes.</remarks>
-    /// <param name="featureId">The unique identifier of the feature to update.</param>
-    /// <param name="newValue">The new value to assign to the feature. Cannot be null or empty.</param>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="newValue"/> is null or empty, or if a feature with the specified <paramref
-    /// name="featureId"/> does not exist.</exception>
-    public void UpdateFeatureValue(Guid featureId, string newValue)
+    /// <remarks>If the product status is discontinued, feature values cannot be modified. The method trims
+    /// leading and trailing white space from the new value before updating. No update occurs if the new value is
+    /// identical to the current value.</remarks>
+    /// <param name="featureId">The unique identifier of the feature to update. Must not be <see cref="Guid.Empty"/>.</param>
+    /// <param name="newValue">The new value to assign to the feature. Cannot be null, empty, or consist only of white-space characters.</param>
+    /// <returns>A <see cref="Result"/> indicating the outcome of the operation. Returns a failure result if the feature ID is
+    /// invalid, the new value is invalid, the product is discontinued, the feature is not found, or the new value is
+    /// unchanged; otherwise, returns a success result.</returns>
+    public Result UpdateFeatureValue(Guid featureId, string newValue)
     {
         if (featureId == Guid.Empty)
-            throw new ArgumentException("FeatureId cannot be empty.", nameof(featureId));
+            return Result.Failure(ProductErrors.InvalidFeatureId);
 
         if (string.IsNullOrWhiteSpace(newValue))
-            throw new ArgumentException("Feature value cannot be null or empty.", nameof(newValue));
+            return Result.Failure(ProductErrors.InvalidFeatureValue);
+
+        if (Status == ProductStatus.Discontinued)
+            return Result.Failure(ProductErrors.DiscontinuedCannotBeModified);
 
         var feature = _features.SingleOrDefault(f => f.Id == featureId);
 
-        if (feature == null)
-            throw new InvalidOperationException($"Feature with ID '{featureId}' not found.");
+        if (feature is null)
+            return Result.Failure(ProductErrors.FeatureNotFound);
 
         var trimmedNewValue = newValue.Trim();
         if (feature.Value == trimmedNewValue)
-            return;
+            return Result.Failure(ProductErrors.FeatureValueUnchanged);
 
         var oldValue = feature.Value;
 
-        feature.UpdateValue(newValue);
+        feature.UpdateValue(trimmedNewValue);
 
         var dateTimeNow = DateTime.UtcNow;
         UpdatedAt = dateTimeNow;
 
         RaiseDomainEvent(new ProductFeatureUpdatedDomainEvent(
-            Id, feature.Id, feature.Name, oldValue, newValue, dateTimeNow));
+            Id, feature.Id, feature.Name, oldValue, trimmedNewValue, dateTimeNow));
+
+        return Result.Success();
     }
 
     /// <summary>
     /// Removes the feature with the specified identifier from the product.
     /// </summary>
-    /// <param name="featureId">The unique identifier of the feature to remove. Cannot be empty.</param>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="featureId"/> is empty or if no feature with the specified identifier exists.</exception>
-    public void RemoveFeature(Guid featureId)
+    /// <remarks>If the product is discontinued, features cannot be removed. If the specified feature does not
+    /// exist, the operation fails and no changes are made.</remarks>
+    /// <param name="featureId">The unique identifier of the feature to remove. Cannot be <see cref="Guid.Empty"/>.</param>
+    /// <returns>A <see cref="Result"/> indicating whether the feature was successfully removed. Returns a failure result if the
+    /// feature does not exist, the identifier is invalid, or the product cannot be modified.</returns>
+    public Result RemoveFeature(Guid featureId)
     {
         if (featureId == Guid.Empty)
-            throw new ArgumentException("FeatureId cannot be empty.", nameof(featureId));
+            return Result.Failure(ProductErrors.InvalidFeatureId);
+
+        if (Status == ProductStatus.Discontinued)
+            return Result.Failure(ProductErrors.DiscontinuedCannotBeModified);
 
         var feature = _features.SingleOrDefault(f => f.Id == featureId);
 
         if (feature == null)
-            throw new ArgumentException($"Feature with ID '{featureId}' not found.", nameof(featureId));
+            return Result.Failure(ProductErrors.FeatureNotFound);
 
         _features.Remove(feature);
 
@@ -301,5 +356,7 @@ public sealed class Product : Entity
 
         RaiseDomainEvent(new ProductFeatureRemovedDomainEvent(
             Id, feature.Id, feature.Name, dateTimeNow));
+
+        return Result.Success();
     }
 }

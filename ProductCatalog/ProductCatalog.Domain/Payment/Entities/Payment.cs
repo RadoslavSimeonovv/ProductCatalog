@@ -1,5 +1,6 @@
 ﻿using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Payment.Enums;
+using ProductCatalog.Domain.Payment.Errors;
 using ProductCatalog.Domain.Payment.Events;
 using ProductCatalog.Domain.Shared.ValueObjects;
 
@@ -11,13 +12,13 @@ public sealed class Payment : Entity
         Guid orderId,
         Money amount,
         string provider,
-        string providerReference,
+        string? providerReference,
         string idemptencyKey,
         DateTime createdAt) : base(id)
     {
         OrderId = orderId;
         Provider = provider;
-        ProviderReference = providerReference;
+        ProviderReference = providerReference!;
         IdempotencyKey = idemptencyKey;
         Amount = amount;
         Status = PaymentStatus.Initiated;
@@ -34,43 +35,37 @@ public sealed class Payment : Entity
     public DateTime? UpdatedAt { get; private set; }
 
     /// <summary>
-    /// Creates a new payment instance for the specified order with the given details.
+    /// Static factory method to create a new Payment instance.
     /// </summary>
-    /// <remarks>This method raises a domain event to signal that a payment has been initiated. Use the
-    /// idempotency key to prevent duplicate payments for the same order in case of repeated requests.</remarks>
-    /// <param name="orderId">The unique identifier of the order for which the payment is being created. Must not be empty.</param>
-    /// <param name="amount">The amount to be paid. Must be a non-null value greater than zero.</param>
-    /// <param name="provider">The name of the payment provider processing the payment. Cannot be null or empty.</param>
-    /// <param name="providerReference">The reference identifier provided by the payment provider. Cannot be null or empty.</param>
-    /// <param name="idemptencyKey">A unique key used to ensure idempotency of the payment creation request. Cannot be null or empty.</param>
-    /// <returns>A new instance of the Payment class representing the initiated payment.</returns>
-    /// <exception cref="ArgumentException">Thrown if any argument is invalid: <paramref name="orderId"/> is empty; <paramref name="amount"/> is null or not
-    /// greater than zero; <paramref name="provider"/>, <paramref name="providerReference"/>, or <paramref
-    /// name="idemptencyKey"/> is null or empty.</exception>
-    public static Payment Create(Guid orderId,
+    /// <param name="orderId"></param>
+    /// <param name="amount"></param>
+    /// <param name="provider"></param>
+    /// <param name="providerReference"></param>
+    /// <param name="idempotencyKey"></param>
+    /// <returns></returns>
+    public static Result<Payment> Create(Guid orderId,
         Money amount,
         string provider,
-        string? providerReference,
         string idempotencyKey)
     {
         if (orderId == Guid.Empty)
         {
-            throw new ArgumentException("Order ID cannot be empty.", nameof(orderId));
+            return Result.Failure<Payment>(PaymentErrors.InvalidOrderId);
         }
 
         if (amount == null || amount.Amount <= 0)
         {
-            throw new ArgumentNullException("Amount must be greater than zero and not null.", nameof(amount));
+            return Result.Failure<Payment>(PaymentErrors.InvalidAmount);
         }
 
         if (string.IsNullOrWhiteSpace(provider))
         {
-            throw new ArgumentException("Provider cannot be null or empty.", nameof(provider));
+            return Result.Failure<Payment>(PaymentErrors.ProviderRequired);
         }
 
         if (string.IsNullOrWhiteSpace(idempotencyKey))
         {
-            throw new ArgumentException("Idempotency key cannot be null or empty.", nameof(idempotencyKey));
+            return Result.Failure<Payment>(PaymentErrors.IdempotencyKeyRequired);
         }
 
         var dateTimeNow = DateTime.UtcNow;
@@ -79,7 +74,7 @@ public sealed class Payment : Entity
             orderId,
             amount,
             provider.Trim(),
-            providerReference: null!,
+            providerReference: null,
             idempotencyKey.Trim(),
             dateTimeNow);
 
@@ -91,33 +86,33 @@ public sealed class Payment : Entity
             payment.IdempotencyKey,
             dateTimeNow));
 
-        return payment;
+        return Result.Success<Payment>(payment);
     }
 
     /// <summary>
-    /// Marks the payment as succeeded using the specified provider reference.
+    /// Marks the payment as succeeded with the specified provider reference.
     /// </summary>
-    /// <param name="providerReference">The unique reference provided by the payment provider to identify the successful transaction. Cannot be null,
-    /// empty, or consist only of white-space characters.</param>
-    /// <exception cref="ArgumentException">Thrown if providerReference is null, empty, or consists only of white-space characters.</exception>
-    public void MarkAsSucceeded(string providerReference)
+    /// <param name="providerReference"></param>
+    /// <returns></returns>
+    public Result MarkAsSucceeded(string providerReference)
     {
         if (string.IsNullOrWhiteSpace(providerReference))
         {
-            throw new ArgumentException("Provider reference cannot be null or empty.", nameof(providerReference));
+            return Result.Failure(PaymentErrors.ProviderReferenceRequired);
         }
 
         if (Status == PaymentStatus.Succeeded)
         {
+            providerReference = providerReference.Trim();
             if (ProviderReference == providerReference)
-                return;
+                return Result.Success();
 
-            throw new InvalidOperationException("Payment already succeeded with a different provider reference.");
+            return Result.Failure(PaymentErrors.AlreadySucceeded);
         }
 
         if (Status == PaymentStatus.Failed)
         {
-            throw new InvalidOperationException("Cannot mark a failed payment as succeeded.");
+            return Result.Failure(PaymentErrors.CannotSucceedFailedPayment);
         }
 
         var dateTimeNow = DateTime.UtcNow;
@@ -133,24 +128,25 @@ public sealed class Payment : Entity
             Amount,
             ProviderReference,
             dateTimeNow));
+
+        return Result.Success();
     }
 
     /// <summary>
-    /// Marks the payment as failed and records the specified reason.
+    /// Marks the payment as failed with an optional reason.
     /// </summary>
-    /// <remarks>This method updates the payment status to failed and triggers a domain event to notify
-    /// subscribers of the failure. The failure reason is included in the event if provided.</remarks>
-    /// <param name="reason">The reason for the payment failure, or null if no specific reason is provided.</param>
-    public void MarkAsFailed(string? reason)
+    /// <param name="reason"></param>
+    /// <returns></returns>
+    public Result MarkAsFailed(string? reason)
     {
         if (Status == PaymentStatus.Succeeded)
         {
-            throw new InvalidOperationException("Cannot mark a succeeded payment as failed.");
+            return Result.Failure(PaymentErrors.CannotFailSucceededPayment);
         }
 
         if (Status == PaymentStatus.Failed)
         {
-            return;
+            return Result.Success();
         }
 
         var dateTimeNow = DateTime.UtcNow;
@@ -165,5 +161,7 @@ public sealed class Payment : Entity
             Amount,
             reason,
             dateTimeNow));
+        
+        return Result.Success();
     }
 }

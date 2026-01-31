@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="ProductCatalog.Application/ProductCatalog.Application.csproj" Id="ab350592-f656-4b58-8754-531418a0dc58" />
     <Project Path="ProductCatalog/ProductCatalog.Domain/ProductCatalog.Domain.csproj" />
   </Folder>
   <Folder Name="/tests/" />

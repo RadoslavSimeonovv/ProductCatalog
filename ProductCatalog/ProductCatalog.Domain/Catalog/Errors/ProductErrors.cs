@@ -42,6 +42,9 @@ public static class ProductErrors
     public static readonly Error InvalidCategoryId =
         new("Product.InvalidCategoryId", "CategoryId cannot be empty.");
 
+    public static readonly Error CategoryNotFound =
+        new("Product.CategoryNotFound", "Category was not found.");
+
     // Price changes
     public static readonly Error PriceUnchanged =
         new("Product.PriceUnchanged", "New price is the same as the current price.");

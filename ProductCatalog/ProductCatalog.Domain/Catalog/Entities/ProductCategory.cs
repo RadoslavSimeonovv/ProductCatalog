@@ -1,4 +1,5 @@
 ﻿using ProductCatalog.Domain.Abstractions;
+using ProductCatalog.Domain.Catalog.Errors;
 
 namespace ProductCatalog.Domain.Catalog.Entities;
 
@@ -22,4 +23,22 @@ public sealed class ProductCategory : Entity
     public IReadOnlyCollection<Product> Products => _products.AsReadOnly();
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
+
+    public static Result<ProductCategory> Create(string name, string description)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return Result.Failure<ProductCategory>(ProductErrors.InvalidCategoryName);
+        }
+
+        description = string.IsNullOrWhiteSpace(description) ? string.Empty : description.Trim();
+
+        var category = new ProductCategory(
+            Guid.NewGuid(), 
+            name, 
+            description, 
+            DateTime.UtcNow);
+
+        return Result.Success(category);
+    }
 }

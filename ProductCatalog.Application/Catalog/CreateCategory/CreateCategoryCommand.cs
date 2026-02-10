@@ -1,0 +1,7 @@
+﻿using ProductCatalog.Application.Messaging;
+
+namespace ProductCatalog.Application.Catalog.CreateCategory;
+
+public sealed record CreateCategoryCommand(
+    string Name,
+    string Description) : ICommand<Guid>;

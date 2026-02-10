@@ -49,13 +49,24 @@ public sealed class Product : Entity
     /// <param name="categoryId"></param>
     /// <param name="sku"></param>
     /// <returns></returns>
-    public static Product Create(
+    public static Result<Product> Create(
         string name,
         string description,
         Money price,
         Guid categoryId,
         Sku sku)
     {
+        if (string.IsNullOrWhiteSpace(name))
+            return Result.Failure<Product>(ProductErrors.InvalidName);
+
+        if (price is null)
+            return Result.Failure<Product>(ProductErrors.InvalidPrice);
+
+        if (categoryId == Guid.Empty)
+            return Result.Failure<Product>(ProductErrors.InvalidCategoryId);
+
+        description = string.IsNullOrWhiteSpace(description) ? string.Empty : description.Trim();
+
         var dateTimeNow = DateTime.UtcNow;
 
         var product = new Product(
@@ -69,7 +80,8 @@ public sealed class Product : Entity
 
         product.RaiseDomainEvent(new ProductCreatedDomainEvent(
             product.Id, product.CategoryId, product.Sku.Value, dateTimeNow));
-        return product;
+
+        return Result.Success(product);
     }
 
     /// <summary>

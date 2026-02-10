@@ -10,6 +10,9 @@ public static class ProductErrors
     public static readonly Error InvalidState =
         new("Product.InvalidState", "Product is in an invalid state for this operation.");
 
+    public static readonly Error InvalidName =
+        new("Product.InvalidName", "Product name is not valid.");
+
     // Status transitions
     public static readonly Error AlreadyActive =
         new("Product.AlreadyActive", "Product is already active.");
@@ -35,7 +38,10 @@ public static class ProductErrors
     public static readonly Error DiscontinuedCannotBeModified =
         new("Product.DiscontinuedCannotBeModified", "Discontinued products cannot be modified.");
 
-    // Category changes
+    // Category errors
+    public static readonly Error InvalidCategoryName =
+        new("Product.InvalidCategoryName", "Category name is invalid.");
+
     public static readonly Error CategoryUnchanged =
         new("Product.CategoryUnchanged", "New category is the same as the current category.");
 
@@ -45,7 +51,7 @@ public static class ProductErrors
     public static readonly Error CategoryNotFound =
         new("Product.CategoryNotFound", "Category was not found.");
 
-    // Price changes
+    // Price errors
     public static readonly Error PriceUnchanged =
         new("Product.PriceUnchanged", "New price is the same as the current price.");
 
@@ -76,4 +82,8 @@ public static class ProductErrors
 
     public static readonly Error FeatureValueUnchanged =
         new("Product.FeatureValueUnchanged", "New feature value is the same as the current value.");
+
+    // Sku errors
+    public static readonly Error InvalidSku =
+        new("Product.InvalidSku", "SKU value is not valid.");
 }

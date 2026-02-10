@@ -13,7 +13,7 @@ internal sealed class CreateProductCommandHandler : ICommandHandler<CreateProduc
     private readonly IProductCategoryRepository _productCategoryRepository;
     private readonly IUnitOfWork _unitOfWork;
     public CreateProductCommandHandler(
-        IProductRepository productRepository, 
+        IProductRepository productRepository,
         IProductCategoryRepository productCategoryRepository,
         IUnitOfWork unitOfWork)
     {
@@ -24,24 +24,32 @@ internal sealed class CreateProductCommandHandler : ICommandHandler<CreateProduc
 
     public async Task<Result<Guid>> Handle(CreateProductCommand request, CancellationToken cancellationToken)
     {
-        var category = await _productCategoryRepository.GetByIdAsync(request.CategoryId, cancellationToken); 
+        var category = await _productCategoryRepository.GetByIdAsync(request.CategoryId, cancellationToken);
 
         if (category is null)
         {
             return Result.Failure<Guid>(ProductErrors.CategoryNotFound);
         }
 
-        var product = Product.Create(
+        var skuResult = Sku.Create(request.Sku);
+
+        if (skuResult.IsFailure)
+            return Result.Failure<Guid>(skuResult.Error);
+
+        var result = Product.Create(
             request.Name,
             request.Description,
             request.Price,
             request.CategoryId,
-            new Sku(request.Sku)
+            skuResult.Value
         );
 
-        _productRepository.Add(product);
+        if (result.IsFailure)
+            return Result.Failure<Guid>(result.Error);
+
+        _productRepository.Add(result.Value);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success(product.Id);
+        return Result.Success(result.Value.Id);
     }
 }

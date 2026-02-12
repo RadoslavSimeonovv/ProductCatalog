@@ -8,16 +8,13 @@ namespace ProductCatalog.Application.Catalog.AddProductFeature;
 internal sealed class AddProductFeatureCommandHandler : ICommandHandler<AddProductFeatureCommand, Guid>
 {
     private readonly IProductRepository _productRepository;
-    private readonly IProductFeatureRepository _productFeatureRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public AddProductFeatureCommandHandler(
         IProductRepository productRepository,
-        IProductFeatureRepository productFeatureRepository,
         IUnitOfWork unitOfWork)
     {
         _productRepository = productRepository;
-        _productFeatureRepository = productFeatureRepository;
         _unitOfWork = unitOfWork;
     }
 

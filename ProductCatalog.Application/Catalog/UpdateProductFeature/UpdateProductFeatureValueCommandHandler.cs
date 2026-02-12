@@ -8,16 +8,13 @@ namespace ProductCatalog.Application.Catalog.UpdateProductFeature;
 internal sealed class UpdateProductFeatureValueCommandHandler : ICommandHandler<UpdateProductFeatureValueCommand>
 {
     private readonly IProductRepository _productRepository;
-    private readonly IProductFeatureRepository _productFeatureRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public UpdateProductFeatureValueCommandHandler(
         IProductRepository productRepository,
-        IProductFeatureRepository productFeatureRepository,
         IUnitOfWork unitOfWork)
     {
         _productRepository = productRepository;
-        _productFeatureRepository = productFeatureRepository;
         _unitOfWork = unitOfWork;
     }
 

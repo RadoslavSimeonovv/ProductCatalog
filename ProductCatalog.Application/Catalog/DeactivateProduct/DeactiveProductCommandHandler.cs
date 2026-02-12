@@ -22,16 +22,12 @@ internal sealed class DeactiveProductCommandHandler : ICommandHandler<DeactivePr
         var product = await _productRepository.GetByIdAsync(request.ProductId, cancellationToken);
 
         if (product is null)
-        {
             return Result.Failure(ProductErrors.NotFound);
-        }
 
         var result = product.Deactivate();
 
         if (result.IsFailure)
-        {
             return result;
-        }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

@@ -10,7 +10,7 @@ internal sealed class ChangeProductPriceCommandHandler : ICommandHandler<ChangeP
     private readonly IProductRepository _productRepository;
     private readonly IUnitOfWork _unitOfWork;
     public ChangeProductPriceCommandHandler(
-        IProductRepository productRepository, 
+        IProductRepository productRepository,
         IUnitOfWork unitOfWork)
     {
         _productRepository = productRepository;
@@ -22,16 +22,12 @@ internal sealed class ChangeProductPriceCommandHandler : ICommandHandler<ChangeP
         var product = await _productRepository.GetByIdAsync(request.ProductId, cancellationToken);
 
         if (product is null)
-        {
             return Result.Failure(ProductErrors.NotFound);
-        }
 
         var result = product.ChangePrice(request.NewPrice);
 
         if (result.IsFailure)
-        {
             return result;
-        }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

@@ -27,9 +27,7 @@ internal sealed class CreateProductCommandHandler : ICommandHandler<CreateProduc
         var category = await _productCategoryRepository.GetByIdAsync(request.CategoryId, cancellationToken);
 
         if (category is null)
-        {
             return Result.Failure<Guid>(ProductErrors.CategoryNotFound);
-        }
 
         var skuResult = Sku.Create(request.Sku);
 

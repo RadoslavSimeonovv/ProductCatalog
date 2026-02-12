@@ -11,7 +11,7 @@ internal sealed class CreateCategoryCommandHandler : ICommandHandler<CreateCateg
     private readonly IUnitOfWork _unitOfWork;
 
     public CreateCategoryCommandHandler(
-        IProductCategoryRepository productCategoryRepository, 
+        IProductCategoryRepository productCategoryRepository,
         IUnitOfWork unitOfWork)
     {
         _productCategoryRepository = productCategoryRepository;
@@ -23,9 +23,7 @@ internal sealed class CreateCategoryCommandHandler : ICommandHandler<CreateCateg
         var result = ProductCategory.Create(request.Name, request.Description);
 
         if (result.IsFailure)
-        {
             return Result.Failure<Guid>(result.Error);
-        }
 
         _productCategoryRepository.Add(result.Value);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

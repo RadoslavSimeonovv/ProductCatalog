@@ -66,7 +66,7 @@ public static class ProductErrors
         new("Product.InvalidFeatureId", "FeatureId cannot be empty.");
 
     public static readonly Error FeatureNotFound =
-        new("Product.FeatureNotFound", "Feature was not found for this product.");
+        new("Product.FeatureNotFound", "Feature was not found.");
 
     public static readonly Error DuplicateFeatureId =
         new("Product.DuplicateFeatureId", "FeatureId must be unique within the product.");

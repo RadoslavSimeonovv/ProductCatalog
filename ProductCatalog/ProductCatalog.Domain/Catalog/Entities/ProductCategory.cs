@@ -41,4 +41,26 @@ public sealed class ProductCategory : Entity
 
         return Result.Success(category);
     }
+
+    public Result UpdateDetails(string name, string description)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return Result.Failure(ProductErrors.InvalidCategoryName);
+        }
+
+        var trimmedName = name.Trim();
+        var trimmedDescription = string.IsNullOrWhiteSpace(description)
+            ? string.Empty
+            : description.Trim();
+
+        if (Name == trimmedName && Description == trimmedDescription)
+            return Result.Success();
+
+        Name = trimmedName;
+        Description = string.IsNullOrWhiteSpace(description) ? string.Empty : description.Trim();
+        UpdatedAt = DateTime.UtcNow;
+
+        return Result.Success();
+    }
 }

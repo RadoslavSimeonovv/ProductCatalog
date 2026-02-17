@@ -6,7 +6,7 @@ using ProductCatalog.Domain.Catalog.Entities;
 using ProductCatalog.Domain.Catalog.Repositories;
 using Microsoft.EntityFrameworkCore;
 
-namespace ProductCatalog.Application.Catalog.GetProductsQuery;
+namespace ProductCatalog.Application.Catalog.GetProducts;
 
 internal sealed class GetProductsQueryHandler : IQueryHandler<GetProductsQuery, PagedResult<ProductResponse>>
 {

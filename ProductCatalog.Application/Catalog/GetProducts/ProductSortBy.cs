@@ -1,4 +1,4 @@
-﻿namespace ProductCatalog.Application.Catalog.GetProductsQuery;
+﻿namespace ProductCatalog.Application.Catalog.GetProducts;
 
 public enum ProductSortBy
 {

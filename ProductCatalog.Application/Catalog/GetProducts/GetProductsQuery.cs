@@ -3,7 +3,7 @@ using ProductCatalog.Application.Catalog.Responses;
 using ProductCatalog.Application.Messaging;
 using ProductCatalog.Domain.Catalog.Enums;
 
-namespace ProductCatalog.Application.Catalog.GetProductsQuery;
+namespace ProductCatalog.Application.Catalog.GetProducts;
 
 public sealed record GetProductsQuery(
     int PageNumber = 1,

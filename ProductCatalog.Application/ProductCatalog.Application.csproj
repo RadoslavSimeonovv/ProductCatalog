@@ -15,4 +15,10 @@
     <ProjectReference Include="..\ProductCatalog\ProductCatalog.Domain\ProductCatalog.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Payment\CreatePayment\" />
+    <Folder Include="Payment\MarkPaymentSucceeded\" />
+    <Folder Include="Payment\MarkPaymentFailed\" />
+  </ItemGroup>
+
 </Project>

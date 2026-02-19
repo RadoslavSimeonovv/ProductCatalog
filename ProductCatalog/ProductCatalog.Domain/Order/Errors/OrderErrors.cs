@@ -11,6 +11,9 @@ public static class OrderErrors
     public static readonly Error InvalidState =
         new("Order.InvalidState", "Order is in an invalid state for this operation.");
 
+    public static readonly Error InvalidOrderId = 
+        new("Order.InvalidOrderId", "Order ID must be a non-empty GUID.");
+
     // Creation / items
     public static readonly Error OrderItemsCannotBeNull =
         new("Order.OrderItemsCannotBeNull", "Order items cannot be null.");
@@ -23,6 +26,9 @@ public static class OrderErrors
 
     public static readonly Error CustomerEmailRequired =
         new("Order.CustomerEmailRequired", "Customer email is required.");
+
+    public static readonly Error OrderItemOrderIdMismatch =
+        new("Order.OrderItemOrderIdMismatch", "All order items must reference the same order ID.");
 
     // Submit / pay / cancel transitions
     public static readonly Error NotCreated =

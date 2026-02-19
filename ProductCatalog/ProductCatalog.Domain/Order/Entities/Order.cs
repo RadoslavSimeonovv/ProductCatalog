@@ -10,17 +10,21 @@ public sealed class Order : Entity
 {
     private readonly List<OrderItem> _items;
     private Order(Guid id,
+        CustomerId customerId,
         string customerEmail,
         Money totalAmount,
         List<OrderItem> items,
         DateTime createdAt) : base(id)
     {
+        Id = id;
+        CustomerId = customerId;
         CustomerEmail = customerEmail;
         TotalAmount = totalAmount;
         Status = OrderStatus.Created;
         _items = [.. items];
         CreatedAt = createdAt;
     }
+    public CustomerId CustomerId { get; private set; }
     public string CustomerEmail { get; private set; }
     public Money TotalAmount { get; private set; }
     public OrderStatus Status { get; private set; }
@@ -30,18 +34,18 @@ public sealed class Order : Entity
     public IReadOnlyCollection<OrderItem> Items => _items.AsReadOnly();
 
     /// <summary>
-    /// Creates a new order for the specified customer with the provided order items.
+    /// Static factory method to create a new order instance. Validates the input parameters and constructs the order
     /// </summary>
-    /// <remarks>The method trims leading and trailing white space from the customer email before creating the
-    /// order. All order items must use the same currency; otherwise, the creation fails with a currency mismatch
-    /// error.</remarks>
-    /// <param name="customerEmail">The email address of the customer placing the order. Cannot be null, empty, or consist only of white-space
-    /// characters.</param>
-    /// <param name="items">The list of items to include in the order. Cannot be null or empty. All items must use the same currency.</param>
-    /// <returns>A result containing the created order if successful; otherwise, a failure result with the appropriate error if
-    /// the input is invalid or the items have mismatched currencies.</returns>
-    public static Result<Order> Create(string customerEmail, List<OrderItem> items)
+    /// <param name="orderId"></param>
+    /// <param name="customerId"></param>
+    /// <param name="customerEmail"></param>
+    /// <param name="items"></param>
+    /// <returns></returns>
+    public static Result<Order> Create(Guid orderId, CustomerId customerId, string customerEmail, List<OrderItem> items)
     {
+        if (orderId == Guid.Empty)
+            return Result.Failure<Order>(OrderErrors.InvalidOrderId);
+
         if (string.IsNullOrWhiteSpace(customerEmail))
             return Result.Failure<Order>(OrderErrors.InvalidCustomerEmail);
 
@@ -53,6 +57,10 @@ public sealed class Order : Entity
 
         var customerEmailTrimmed = customerEmail.Trim();
         var orderItems = new List<OrderItem>(items);
+
+        if (orderItems.Any(i => i.OrderId != orderId))
+            return Result.Failure<Order>(OrderErrors.OrderItemOrderIdMismatch);
+
         var orderCurrency = orderItems[0].LineTotal.Currency;
         var orderTotal = Money.Zero(orderCurrency);
 
@@ -64,16 +72,17 @@ public sealed class Order : Entity
             orderTotal += item.LineTotal;
         }
 
-        var dateTimeNow = DateTime.UtcNow;
+        var now = DateTime.UtcNow;
 
-        var order = new Order(Guid.NewGuid(),
-            customerEmailTrimmed,
-            orderTotal,
-            orderItems,
-            dateTimeNow);
+        var order = new Order(
+            id: orderId,
+            customerId: customerId,
+            customerEmail: customerEmailTrimmed,
+            totalAmount: orderTotal,
+            items: orderItems,
+            createdAt: now);
 
-        order.RaiseDomainEvent(new OrderCreatedDomainEvent(
-            order.Id, order.CustomerEmail, order.TotalAmount, dateTimeNow));
+        order.RaiseDomainEvent(new OrderCreatedDomainEvent(order.Id, order.CustomerEmail, order.TotalAmount, now));
 
         return Result.Success(order);
     }

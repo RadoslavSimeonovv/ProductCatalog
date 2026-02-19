@@ -10,6 +10,7 @@ public sealed class Payment : Entity
 {
     private Payment(Guid id,
         Guid orderId,
+        CustomerId customerId,
         Money amount,
         string provider,
         string? providerReference,
@@ -17,6 +18,7 @@ public sealed class Payment : Entity
         DateTime createdAt) : base(id)
     {
         OrderId = orderId;
+        CustomerId = customerId;
         Provider = provider;
         ProviderReference = providerReference!;
         IdempotencyKey = idemptencyKey;
@@ -26,6 +28,7 @@ public sealed class Payment : Entity
     }
 
     public Guid OrderId { get; private set; }
+    public CustomerId CustomerId { get; private set; }
     public Money Amount { get; private set; }
     public PaymentStatus Status { get; private set; }
     public string Provider { get; private set; }
@@ -38,12 +41,14 @@ public sealed class Payment : Entity
     /// Static factory method to create a new Payment instance.
     /// </summary>
     /// <param name="orderId"></param>
+    /// <param name="customerId"></param>
     /// <param name="amount"></param>
     /// <param name="provider"></param>
     /// <param name="providerReference"></param>
     /// <param name="idempotencyKey"></param>
     /// <returns></returns>
     public static Result<Payment> Create(Guid orderId,
+        CustomerId customerId,
         Money amount,
         string provider,
         string idempotencyKey)
@@ -72,6 +77,7 @@ public sealed class Payment : Entity
 
         var payment = new Payment(Guid.NewGuid(),
             orderId,
+            customerId,
             amount,
             provider.Trim(),
             providerReference: null,

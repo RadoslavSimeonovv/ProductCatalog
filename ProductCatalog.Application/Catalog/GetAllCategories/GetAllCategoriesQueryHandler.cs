@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ProductCatalog.Application.Abstractions.Messaging;
 using ProductCatalog.Application.Catalog.Responses;
-using ProductCatalog.Application.Messaging;
 using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Catalog.Repositories;
 

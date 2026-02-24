@@ -1,6 +1,6 @@
-﻿using ProductCatalog.Application.Catalog.PaginatedResponse;
+﻿using ProductCatalog.Application.Abstractions.Messaging;
+using ProductCatalog.Application.Catalog.PaginatedResponse;
 using ProductCatalog.Application.Catalog.Responses;
-using ProductCatalog.Application.Messaging;
 using ProductCatalog.Domain.Catalog.Enums;
 
 namespace ProductCatalog.Application.Catalog.GetProducts;

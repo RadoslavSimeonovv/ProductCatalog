@@ -1,4 +1,4 @@
-﻿using ProductCatalog.Application.Messaging;
+﻿using ProductCatalog.Application.Abstractions.Messaging;
 using ProductCatalog.Application.Order.Responses;
 
 namespace ProductCatalog.Application.Order.GetAllOrders;

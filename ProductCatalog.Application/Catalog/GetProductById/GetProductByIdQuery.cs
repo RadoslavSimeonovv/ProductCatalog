@@ -1,5 +1,5 @@
-﻿using ProductCatalog.Application.Catalog.Responses;
-using ProductCatalog.Application.Messaging;
+﻿using ProductCatalog.Application.Abstractions.Messaging;
+using ProductCatalog.Application.Catalog.Responses;
 
 namespace ProductCatalog.Application.Catalog.GetProductById;
 

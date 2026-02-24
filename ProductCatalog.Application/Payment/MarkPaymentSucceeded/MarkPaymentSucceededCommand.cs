@@ -1,4 +1,4 @@
-﻿using ProductCatalog.Application.Messaging;
+﻿using ProductCatalog.Application.Abstractions.Messaging;
 
 namespace ProductCatalog.Application.Payment.MarkPaymentSucceeded;
 

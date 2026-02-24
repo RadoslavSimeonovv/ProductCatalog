@@ -1,10 +1,10 @@
 ﻿using ProductCatalog.Application.Catalog.PaginatedResponse;
 using ProductCatalog.Application.Catalog.Responses;
-using ProductCatalog.Application.Messaging;
 using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Catalog.Entities;
 using ProductCatalog.Domain.Catalog.Repositories;
 using Microsoft.EntityFrameworkCore;
+using ProductCatalog.Application.Abstractions.Messaging;
 
 namespace ProductCatalog.Application.Catalog.GetProducts;
 

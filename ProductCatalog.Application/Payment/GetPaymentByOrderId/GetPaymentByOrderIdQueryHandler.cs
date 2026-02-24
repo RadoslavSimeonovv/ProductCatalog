@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using ProductCatalog.Application.Messaging;
+using ProductCatalog.Application.Abstractions.Messaging;
 using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Payment.Repositories;
 

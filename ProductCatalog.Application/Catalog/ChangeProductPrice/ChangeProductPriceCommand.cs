@@ -1,4 +1,4 @@
-﻿using ProductCatalog.Application.Messaging;
+﻿using ProductCatalog.Application.Abstractions.Messaging;
 using ProductCatalog.Domain.Shared.ValueObjects;
 
 namespace ProductCatalog.Application.Catalog.ChangeProductPrice;

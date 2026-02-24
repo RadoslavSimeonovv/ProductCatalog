@@ -1,4 +1,4 @@
-﻿using ProductCatalog.Application.Messaging;
+﻿using ProductCatalog.Application.Abstractions.Messaging;
 using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Order.Errors;
 using ProductCatalog.Domain.Order.Repositories;

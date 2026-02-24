@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using ProductCatalog.Domain.Abstractions;
 
-namespace ProductCatalog.Application.Messaging;
+namespace ProductCatalog.Application.Abstractions.Messaging;
 
 public interface ICommandHandler<TCommand> : IRequestHandler<TCommand, Result>
     where TCommand : ICommand       

@@ -1,7 +1,6 @@
-﻿namespace ProductCatalog.Domain.Payment.Repositories;
+﻿using PaymentEntity = ProductCatalog.Domain.Payment.Entities.Payment;
 
-using ProductCatalog.Domain.Catalog.Entities;
-using PaymentEntity = Entities.Payment;
+namespace ProductCatalog.Domain.Payment.Repositories;
 
 public interface IPaymentRepository
 {
@@ -10,4 +9,6 @@ public interface IPaymentRepository
     IQueryable<PaymentEntity> GetPaymentsByOrderId(Guid orderId);
 
     void Add(PaymentEntity payment);
+
+    Task<PaymentEntity?> GetByIdempotencyKeyAsync(string key, string provider, CancellationToken cancellationToken = default);
 }

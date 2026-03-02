@@ -2,4 +2,7 @@
 
 namespace ProductCatalog.Application.Order.SubmitOrderForPayment;
 
-public sealed record SubmitOrderForPaymentCommand(Guid OrderId) : ICommand;
+public sealed record SubmitOrderForPaymentCommand(
+    Guid OrderId, 
+    string Provider,
+    string IdempotencyKey) : ICommand<Guid>;

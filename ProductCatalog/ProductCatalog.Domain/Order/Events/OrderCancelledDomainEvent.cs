@@ -10,5 +10,6 @@ namespace ProductCatalog.Domain.Order.Events;
 /// <param name="OccurredAtUtc"></param>
 public sealed record OrderCancelledDomainEvent(
     Guid OrderId,
+    string CustomerEmail,
     string? Reason,
     DateTime OccurredAtUtc) : IDomainEvent;

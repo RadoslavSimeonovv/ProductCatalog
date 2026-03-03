@@ -160,7 +160,7 @@ public sealed class Order : Entity
         UpdatedAt = dateTimeNow;
 
         RaiseDomainEvent(new OrderCancelledDomainEvent(
-            Id, reason, dateTimeNow));
+            Id, CustomerEmail, reason, dateTimeNow));
 
         return Result.Success();
     }

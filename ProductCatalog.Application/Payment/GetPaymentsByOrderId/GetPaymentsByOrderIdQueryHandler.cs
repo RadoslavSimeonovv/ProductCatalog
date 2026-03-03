@@ -3,17 +3,17 @@ using ProductCatalog.Application.Abstractions.Messaging;
 using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Payment.Repositories;
 
-namespace ProductCatalog.Application.Payment.GetPaymentByOrderId;
+namespace ProductCatalog.Application.Payment.GetPaymentsByOrderId;
 
-internal sealed class GetPaymentByOrderIdQueryHandler : IQueryHandler<GetPaymentByOrderIdQuery, IReadOnlyList<PaymentResponse>>
+internal sealed class GetPaymentsByOrderIdQueryHandler : IQueryHandler<GetPaymentsByOrderIdQuery, IReadOnlyList<PaymentResponse>>
 {
     private readonly IPaymentRepository _paymentRepository;
 
-    public GetPaymentByOrderIdQueryHandler(IPaymentRepository paymentRepository)
+    public GetPaymentsByOrderIdQueryHandler(IPaymentRepository paymentRepository)
     {
         _paymentRepository = paymentRepository;
     }
-    public async Task<Result<IReadOnlyList<PaymentResponse>>> Handle(GetPaymentByOrderIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IReadOnlyList<PaymentResponse>>> Handle(GetPaymentsByOrderIdQuery request, CancellationToken cancellationToken)
     {
         var paymentsResponse = await _paymentRepository.GetPaymentsByOrderId(request.OrderId)
             .AsNoTracking()

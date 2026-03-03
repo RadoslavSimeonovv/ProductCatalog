@@ -3,4 +3,4 @@ using ProductCatalog.Application.Order.Responses;
 
 namespace ProductCatalog.Application.Order.GetOrderById;
 
-public sealed record GerOrderByIdQuery(Guid OrderId) : IQuery<OrderResponse>;
+public sealed record GetOrderByIdQuery(Guid Id) : IQuery<OrderResponse>;

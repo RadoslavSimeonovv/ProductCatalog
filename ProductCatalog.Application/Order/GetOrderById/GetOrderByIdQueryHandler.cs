@@ -6,16 +6,16 @@ using ProductCatalog.Domain.Order.Repositories;
 
 namespace ProductCatalog.Application.Order.GetOrderById;
 
-internal sealed class GetOrderByIdQueryHandler : IQueryHandler<GerOrderByIdQuery, OrderResponse>
+internal sealed class GetOrderByIdQueryHandler : IQueryHandler<GetOrderByIdQuery, OrderResponse>
 {
     private readonly IOrderRepository _orderRepository;
     public GetOrderByIdQueryHandler(IOrderRepository orderRepository)
     {
         _orderRepository = orderRepository;
     }
-    public async Task<Result<OrderResponse>> Handle(GerOrderByIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<OrderResponse>> Handle(GetOrderByIdQuery request, CancellationToken cancellationToken)
     {
-        var order = await _orderRepository.GetByIdAsync(request.OrderId, cancellationToken);
+        var order = await _orderRepository.GetByIdAsync(request.Id, cancellationToken);
 
         if (order is null)
             return Result.Failure<OrderResponse>(OrderErrors.NotFound);

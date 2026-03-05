@@ -11,7 +11,7 @@ public record Sku
 
     private Sku(string value)
     {
-        value = Value!;
+        Value = value;
     }
 
     public string Value { get; private set; }

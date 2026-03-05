@@ -14,14 +14,14 @@ public sealed class Payment : Entity
         Money amount,
         string provider,
         string? providerReference,
-        string idemptencyKey,
+        string idempotencyKey,
         DateTime createdAt) : base(id)
     {
         OrderId = orderId;
         CustomerId = customerId;
         Provider = provider;
-        ProviderReference = providerReference!;
-        IdempotencyKey = idemptencyKey;
+        ProviderReference = providerReference ?? string.Empty;
+        IdempotencyKey = idempotencyKey;
         Amount = amount;
         Status = PaymentStatus.Initiated;
         CreatedAt = createdAt;
@@ -107,9 +107,11 @@ public sealed class Payment : Entity
             return Result.Failure(PaymentErrors.ProviderReferenceRequired);
         }
 
+        var trimmedReference = providerReference.Trim();
+
         if (Status == PaymentStatus.Succeeded)
         {
-            providerReference = providerReference.Trim();
+            providerReference = trimmedReference;
             if (ProviderReference == providerReference)
                 return Result.Success();
 
@@ -123,7 +125,7 @@ public sealed class Payment : Entity
 
         var dateTimeNow = DateTime.UtcNow;
 
-        ProviderReference = providerReference.Trim();
+        ProviderReference = trimmedReference;
         Status = PaymentStatus.Succeeded;
 
         UpdatedAt = dateTimeNow;

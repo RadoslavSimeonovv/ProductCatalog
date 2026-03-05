@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using ProductCatalog.Application.Abstractions.Behaviors;
-using ProductCatalog.Application.Abstractions.Behaviours;
 
 namespace ProductCatalog.Application;
 

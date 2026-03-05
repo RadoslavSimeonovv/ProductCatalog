@@ -9,9 +9,6 @@ public class AddProductFeatureCommandValidator : AbstractValidator<AddProductFea
         RuleFor(x => x.ProductId)
             .NotEmpty().WithMessage("Product ID is required.");
 
-        RuleFor(x => x.FeatureId)
-           .NotEmpty().WithMessage("Feature ID is required.");
-
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Feature name is required.")
             .MaximumLength(100).WithMessage("Feature name cannot exceed 100 characters.");

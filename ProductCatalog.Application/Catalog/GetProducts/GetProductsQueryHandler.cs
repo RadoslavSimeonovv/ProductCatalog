@@ -18,9 +18,9 @@ internal sealed class GetProductsQueryHandler : IQueryHandler<GetProductsQuery, 
 
     public async Task<Result<PagedResult<ProductResponse>>> Handle(GetProductsQuery request, CancellationToken cancellationToken)
     {
-        var products = _productRepository
-            .Query()
-            .AsNoTracking();
+        var products = request.SortBy == ProductSortBy.Category
+            ? _productRepository.QueryWithCategory()
+            : _productRepository.Query();
 
         var page = request.PageNumber is < 1 ? 1 : request.PageNumber;
         var pageSize = request.PageSize is < 1 ? 10 : request.PageSize;
@@ -68,7 +68,7 @@ internal sealed class GetProductsQueryHandler : IQueryHandler<GetProductsQuery, 
             Items = items,
             Page = page,
             PageSize = pageSize,
-            PageCount = (int)Math.Ceiling(totalCount / (double)pageSize)
+            TotalCount = totalCount
         });
     }
 
@@ -82,7 +82,6 @@ internal sealed class GetProductsQueryHandler : IQueryHandler<GetProductsQuery, 
             ProductSortBy.Name => products
                                     .OrderBy(p => p.Name),
             ProductSortBy.Category => products
-                                    .Include(x => x.Category)
                                     .OrderBy(p => p.Category!.Name),
             ProductSortBy.Price => products
                                     .OrderBy(p => p.Price.Amount),

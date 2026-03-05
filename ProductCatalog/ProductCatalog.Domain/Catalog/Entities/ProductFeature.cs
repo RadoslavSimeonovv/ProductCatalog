@@ -7,7 +7,7 @@ namespace ProductCatalog.Domain.Catalog.Entities;
 /// </summary>
 public sealed class ProductFeature : Entity
 {
-    public ProductFeature(Guid id,
+    internal ProductFeature(Guid id,
         string name,
         string value,
         int displayOrder,
@@ -36,5 +36,6 @@ public sealed class ProductFeature : Entity
             throw new ArgumentException("Feature value cannot be null or empty.", nameof(newValue));
         
         Value = newValue;
+        UpdatedAt = DateTime.Now;
     }
 }

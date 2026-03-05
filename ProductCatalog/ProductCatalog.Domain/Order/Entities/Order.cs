@@ -16,7 +16,6 @@ public sealed class Order : Entity
         List<OrderItem> items,
         DateTime createdAt) : base(id)
     {
-        Id = id;
         CustomerId = customerId;
         CustomerEmail = customerEmail;
         TotalAmount = totalAmount;

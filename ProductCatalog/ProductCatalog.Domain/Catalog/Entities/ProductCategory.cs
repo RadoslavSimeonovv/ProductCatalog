@@ -7,7 +7,6 @@ namespace ProductCatalog.Domain.Catalog.Entities;
 /// </summary>
 public sealed class ProductCategory : Entity
 {
-    private readonly List<Product> _products = new();
     public ProductCategory(Guid id,
         string name,
         string description,
@@ -20,7 +19,6 @@ public sealed class ProductCategory : Entity
     }
     public string Name { get; private set; }
     public string? Description { get; private set; }
-    public IReadOnlyCollection<Product> Products => _products.AsReadOnly();
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
 
@@ -31,11 +29,12 @@ public sealed class ProductCategory : Entity
             return Result.Failure<ProductCategory>(ProductErrors.InvalidCategoryName);
         }
 
+        var trimmedName = name.Trim();
         description = string.IsNullOrWhiteSpace(description) ? string.Empty : description.Trim();
 
         var category = new ProductCategory(
-            Guid.NewGuid(), 
-            name, 
+            Guid.NewGuid(),
+            trimmedName, 
             description, 
             DateTime.UtcNow);
 
@@ -58,7 +57,7 @@ public sealed class ProductCategory : Entity
             return Result.Success();
 
         Name = trimmedName;
-        Description = string.IsNullOrWhiteSpace(description) ? string.Empty : description.Trim();
+        Description = trimmedDescription;
         UpdatedAt = DateTime.UtcNow;
 
         return Result.Success();

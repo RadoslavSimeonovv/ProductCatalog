@@ -8,5 +8,4 @@ public interface IProductRepository
     IQueryable<Product> Query();
     IQueryable<Product> QueryWithCategory();
     void Add(Product product);
-    void Update(Product product);
 }

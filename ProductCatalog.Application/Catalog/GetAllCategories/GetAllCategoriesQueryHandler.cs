@@ -20,7 +20,6 @@ internal sealed class GetAllCategoriesQueryHandler
     {
         var categories = await _productCategoryRepository
             .Query()
-            .AsNoTracking()
             .Select(c => new ProductCategoryResponse
             {
                 Id = c.Id,

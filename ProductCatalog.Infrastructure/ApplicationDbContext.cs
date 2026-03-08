@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Catalog.Entities;
 using ProductCatalog.Domain.Order.Entities;
@@ -8,9 +9,13 @@ namespace ProductCatalog.Infrastructure;
 
 public sealed class ApplicationDbContext : DbContext, IUnitOfWork
 {
-    public ApplicationDbContext(DbContextOptions options)
+    private readonly IPublisher _publisher;
+    public ApplicationDbContext(
+        DbContextOptions options,
+        IPublisher publisher)
         : base(options)
     {
+        _publisher = publisher;
     }
 
     public DbSet<Product> Products => Set<Product>();
@@ -25,5 +30,35 @@ public sealed class ApplicationDbContext : DbContext, IUnitOfWork
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
         base.OnModelCreating(modelBuilder);
+    }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var result = await base.SaveChangesAsync(cancellationToken);
+
+        await PublishDomainEventsAsync(cancellationToken);
+
+        return result;
+    }
+
+    private async Task PublishDomainEventsAsync(CancellationToken cancellationToken)
+    {
+        var domainEvents = ChangeTracker
+             .Entries<Entity>()
+             .Select(e => e.Entity)
+             .SelectMany(e =>
+             {
+                 var domainEvents = e.GetDomainEvents();
+
+                 e.ClearDomainEvents();
+
+                 return domainEvents;
+             })
+             .ToList();
+
+        foreach (var domainEvent in domainEvents)
+        {
+            await _publisher.Publish(domainEvent, cancellationToken);
+        }
     }
 }

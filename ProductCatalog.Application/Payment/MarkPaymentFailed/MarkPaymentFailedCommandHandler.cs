@@ -1,4 +1,5 @@
 ﻿using ProductCatalog.Application.Abstractions.Messaging;
+using ProductCatalog.Application.Exceptions;
 using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Payment.Errors;
 using ProductCatalog.Domain.Payment.Repositories;
@@ -27,7 +28,14 @@ internal sealed class MarkPaymentFailedCommandHandler : ICommandHandler<MarkPaym
         if (result.IsFailure)
             return result;
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-        return Result.Success();
+        try
+        {
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            return Result.Success();
+        }
+        catch (ConcurrencyException)
+        {
+            return Result.Failure(PaymentErrors.ConcurrencyConflict);
+        }
     }
 }

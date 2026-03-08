@@ -64,5 +64,7 @@ internal sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.HasIndex(x => x.CustomerId);
         builder.HasIndex(x => new { x.Provider, x.IdempotencyKey }).IsUnique();
 
+        builder.Property(x => x.Version)
+            .IsRowVersion();
     }
 }

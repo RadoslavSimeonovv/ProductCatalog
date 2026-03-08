@@ -1,15 +1,16 @@
 ﻿using ProductCatalog.Application.Abstractions.Messaging;
+using ProductCatalog.Application.Exceptions;
 using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Catalog.Errors;
 using ProductCatalog.Domain.Catalog.Repositories;
 
 namespace ProductCatalog.Application.Catalog.DeactivateProduct;
 
-internal sealed class DeactiveProductCommandHandler : ICommandHandler<DeactiveProductCommand>
+internal sealed class DeactivateProductCommandHandler : ICommandHandler<DeactivateProductCommand>
 {
     private readonly IProductRepository _productRepository;
     private readonly IUnitOfWork _unitOfWork;
-    public DeactiveProductCommandHandler(
+    public DeactivateProductCommandHandler(
         IProductRepository productRepository,
         IUnitOfWork unitOfWork)
     {
@@ -17,7 +18,7 @@ internal sealed class DeactiveProductCommandHandler : ICommandHandler<DeactivePr
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result> Handle(DeactiveProductCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(DeactivateProductCommand request, CancellationToken cancellationToken)
     {
         var product = await _productRepository.GetByIdAsync(request.ProductId, cancellationToken);
 
@@ -29,8 +30,15 @@ internal sealed class DeactiveProductCommandHandler : ICommandHandler<DeactivePr
         if (result.IsFailure)
             return result;
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success();
+            return Result.Success();
+        }
+        catch (ConcurrencyException)
+        {
+            return Result.Failure(ProductErrors.ConcurrencyConflict);
+        }
     }
 }

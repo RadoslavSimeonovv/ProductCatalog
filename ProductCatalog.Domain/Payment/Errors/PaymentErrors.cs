@@ -39,4 +39,7 @@ public static class PaymentErrors
 
     public static readonly Error ProviderReferenceRequired =
         new("Payment.ProviderReferenceRequired", "Provider reference is required.");
+
+    public static readonly Error ConcurrencyConflict =
+        new("Payment.ConcurrencyConflict", "Concurrency conflict occurred");
 }

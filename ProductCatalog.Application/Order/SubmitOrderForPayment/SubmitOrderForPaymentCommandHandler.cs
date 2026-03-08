@@ -1,4 +1,5 @@
 ﻿using ProductCatalog.Application.Abstractions.Messaging;
+using ProductCatalog.Application.Exceptions;
 using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Order.Errors;
 using ProductCatalog.Domain.Order.Repositories;
@@ -52,8 +53,15 @@ internal sealed class SubmitOrderForPaymentCommandHandler : ICommandHandler<Subm
 
         _paymentRepository.Add(paymentResult.Value);
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success(paymentResult.Value.Id);
+            return Result.Success(paymentResult.Value.Id);
+        }
+        catch (ConcurrencyException)
+        {
+            return Result.Failure<Guid>(OrderErrors.ConcurrencyConflict);
+        }
     }
 }

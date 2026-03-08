@@ -86,4 +86,7 @@ public static class ProductErrors
     // Sku errors
     public static readonly Error InvalidSku =
         new("Product.InvalidSku", "SKU value is not valid.");
+
+    public static readonly Error ConcurrencyConflict =
+        new("Product.ConcurrencyConflict", "Concurrency conflict occurred");
 }

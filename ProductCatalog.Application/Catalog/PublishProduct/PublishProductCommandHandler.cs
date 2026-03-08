@@ -1,4 +1,5 @@
 ﻿using ProductCatalog.Application.Abstractions.Messaging;
+using ProductCatalog.Application.Exceptions;
 using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Catalog.Errors;
 using ProductCatalog.Domain.Catalog.Repositories;
@@ -29,8 +30,15 @@ internal sealed class PublishProductCommandHandler : ICommandHandler<PublishProd
         if (result.IsFailure)
             return result;
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success();
+            return Result.Success();
+        }
+        catch (ConcurrencyException)
+        {
+            return Result.Failure(ProductErrors.ConcurrencyConflict);
+        }
     }
 }

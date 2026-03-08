@@ -39,6 +39,7 @@ public sealed class Product : Entity
     public IReadOnlyCollection<ProductFeature> Features => _features.AsReadOnly();
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
+    public uint Version { get; private set; }
 
     /// <summary>
     /// Factory method to create a new Product

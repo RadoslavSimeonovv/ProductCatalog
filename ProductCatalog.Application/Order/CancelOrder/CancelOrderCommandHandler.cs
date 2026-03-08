@@ -1,4 +1,5 @@
 ﻿using ProductCatalog.Application.Abstractions.Messaging;
+using ProductCatalog.Application.Exceptions;
 using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Order.Errors;
 using ProductCatalog.Domain.Order.Repositories;
@@ -27,8 +28,14 @@ internal sealed class CancelOrderCommandHandler : ICommandHandler<CancelOrderCom
         if (result.IsFailure)
             return Result.Failure(result.Error);
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        return result;
+        try
+        {
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            return Result.Success();
+        }
+        catch (ConcurrencyException)
+        {
+            return Result.Failure(OrderErrors.ConcurrencyConflict);
+        }
     }
 }

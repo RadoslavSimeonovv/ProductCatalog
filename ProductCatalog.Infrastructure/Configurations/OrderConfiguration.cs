@@ -61,5 +61,8 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.HasIndex(x => x.CustomerId);
         builder.HasIndex(x => x.Status);
         builder.HasIndex(x => x.CreatedAt);
+
+        builder.Property(x => x.Version)
+            .IsRowVersion();
     }
 }

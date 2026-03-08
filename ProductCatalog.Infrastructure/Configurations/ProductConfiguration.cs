@@ -74,5 +74,7 @@ internal sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.HasIndex(x => x.CategoryId);
         builder.HasIndex(x => x.Name);
 
+        builder.Property(x => x.Version)
+            .IsRowVersion();
     }
 }

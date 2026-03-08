@@ -55,4 +55,8 @@ public static class OrderErrors
     // Email
     public static readonly Error InvalidCustomerEmail =
         new("Order.InvalidCustomerEmail", "Customer email is invalid.");
+
+
+    public static readonly Error ConcurrencyConflict =
+        new("Order.ConcurrencyConflict", "Concurrency conflict occurred");
 }

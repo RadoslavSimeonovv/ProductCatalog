@@ -36,6 +36,7 @@ public sealed class Payment : Entity
     public string IdempotencyKey { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
+    public uint Version { get; private set; }
 
     /// <summary>
     /// Static factory method to create a new Payment instance.

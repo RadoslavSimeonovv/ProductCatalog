@@ -2,9 +2,9 @@
 
 namespace ProductCatalog.Application.Catalog.DeactivateProduct;
 
-public class DeacivateProductCommandValidator : AbstractValidator<DeactiveProductCommand>
+public class DeactivateProductCommandValidator : AbstractValidator<DeactivateProductCommand>
 {
-    public DeacivateProductCommandValidator()
+    public DeactivateProductCommandValidator()
     {
         RuleFor(x => x.ProductId)
             .NotEmpty().WithMessage("Product ID is required.");

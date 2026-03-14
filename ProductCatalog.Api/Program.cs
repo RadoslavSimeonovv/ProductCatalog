@@ -1,5 +1,8 @@
 using Bookify.Infrastructure;
+using ProductCatalog.Api.Endpoints.Categories;
 using ProductCatalog.Api.Endpoints.Orders;
+using ProductCatalog.Api.Endpoints.Payments;
+using ProductCatalog.Api.Endpoints.Products;
 using ProductCatalog.Application;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,5 +27,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapOrderEndpoints();
+app.MapPaymentEndpoints();
+app.MapProductEndpoints();
+app.MapCategoryEndpoints();
 
 app.Run();

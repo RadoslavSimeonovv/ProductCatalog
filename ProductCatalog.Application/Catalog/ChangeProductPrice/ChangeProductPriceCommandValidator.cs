@@ -9,16 +9,10 @@ public class ChangeProductPriceCommandValidator : AbstractValidator<ChangeProduc
         RuleFor(x => x.ProductId)
         .NotEmpty().WithMessage("Product ID is required.");
 
-        RuleFor(x => x.NewPrice)
-            .NotNull().WithMessage("New price is required.");
-
-        RuleFor(x => x.NewPrice.Amount)
+        RuleFor(x => x.PriceAmount)
             .GreaterThan(0).WithMessage("Price must be greater than zero.");
 
-        RuleFor(x => x.NewPrice.Currency)
-            .NotNull().WithMessage("Currency is required.");
-
-        RuleFor(x => x.NewPrice.Currency.Code)
+        RuleFor(x => x.Currency)
             .NotEmpty()
             .Length(3)
             .WithMessage("Currency must be a 3-letter ISO code.");

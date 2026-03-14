@@ -6,40 +6,40 @@ public static class PaymentErrors
 {
     // Generic
     public static readonly Error NotFound =
-        new("Payment.NotFound", "Payment was not found.");
+        new("Payment.NotFound", "Payment was not found.", ErrorType.NotFound);
 
     public static readonly Error InvalidState =
-        new("Payment.InvalidState", "Payment is in an invalid state for this operation.");
+        new("Payment.InvalidState", "Payment is in an invalid state for this operation.", ErrorType.Validation);
 
     // Creation
     public static readonly Error InvalidOrderId =
-        new("Payment.InvalidOrderId", "OrderId cannot be empty.");
+        new("Payment.InvalidOrderId", "OrderId cannot be empty.", ErrorType.Validation);
 
     public static readonly Error InvalidAmount =
-        new("Payment.InvalidAmount", "Payment amount must be greater than zero.");
+        new("Payment.InvalidAmount", "Payment amount must be greater than zero.", ErrorType.Validation);
 
     public static readonly Error ProviderRequired =
-        new("Payment.ProviderRequired", "Provider is required.");
+        new("Payment.ProviderRequired", "Provider is required.", ErrorType.Validation);
 
     public static readonly Error IdempotencyKeyRequired =
-        new("Payment.IdempotencyKeyRequired", "Idempotency key is required.");
+        new("Payment.IdempotencyKeyRequired", "Idempotency key is required.", ErrorType.Validation);
 
     // Status transitions
     public static readonly Error AlreadySucceeded =
-        new("Payment.AlreadySucceeded", "Payment is already marked as succeeded.");
+        new("Payment.AlreadySucceeded", "Payment is already marked as succeeded.", ErrorType.Validation);
 
     public static readonly Error AlreadyFailed =
-        new("Payment.AlreadyFailed", "Payment is already marked as failed.");
+        new("Payment.AlreadyFailed", "Payment is already marked as failed.", ErrorType.Validation);
 
     public static readonly Error CannotSucceedFailedPayment =
-        new("Payment.CannotSucceedFailedPayment", "Cannot mark a failed payment as succeeded.");
+        new("Payment.CannotSucceedFailedPayment", "Cannot mark a failed payment as succeeded.", ErrorType.Validation);
 
     public static readonly Error CannotFailSucceededPayment =
-        new("Payment.CannotFailSucceededPayment", "Cannot mark a succeeded payment as failed.");
+        new("Payment.CannotFailSucceededPayment", "Cannot mark a succeeded payment as failed.", ErrorType.Validation);
 
     public static readonly Error ProviderReferenceRequired =
-        new("Payment.ProviderReferenceRequired", "Provider reference is required.");
+        new("Payment.ProviderReferenceRequired", "Provider reference is required.", ErrorType.Validation);
 
     public static readonly Error ConcurrencyConflict =
-        new("Payment.ConcurrencyConflict", "Concurrency conflict occurred");
+        new("Payment.ConcurrencyConflict", "Concurrency conflict occurred", ErrorType.Conflict);
 }

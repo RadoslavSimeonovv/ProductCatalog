@@ -4,6 +4,7 @@ using ProductCatalog.Domain.Catalog.Entities;
 using ProductCatalog.Domain.Catalog.Errors;
 using ProductCatalog.Domain.Catalog.Repositories;
 using ProductCatalog.Domain.Catalog.ValueObjects;
+using ProductCatalog.Domain.Shared.ValueObjects;
 
 namespace ProductCatalog.Application.Catalog.CreateProduct;
 
@@ -34,10 +35,14 @@ internal sealed class CreateProductCommandHandler : ICommandHandler<CreateProduc
         if (skuResult.IsFailure)
             return Result.Failure<Guid>(skuResult.Error);
 
+        var currencyResult = Currency.FromCode(request.Currency);
+
+        var price = new Money(request.PriceAmount, currencyResult);
+
         var result = Product.Create(
             request.Name,
-            request.Description,
-            request.Price,
+            request.Description!,
+            price,
             request.CategoryId,
             skuResult.Value
         );

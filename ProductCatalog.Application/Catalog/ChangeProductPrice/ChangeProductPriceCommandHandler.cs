@@ -3,6 +3,7 @@ using ProductCatalog.Application.Exceptions;
 using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Catalog.Errors;
 using ProductCatalog.Domain.Catalog.Repositories;
+using ProductCatalog.Domain.Shared.ValueObjects;
 
 namespace ProductCatalog.Application.Catalog.ChangeProductPrice;
 
@@ -23,9 +24,12 @@ internal sealed class ChangeProductPriceCommandHandler : ICommandHandler<ChangeP
         var product = await _productRepository.GetByIdAsync(request.ProductId, cancellationToken);
 
         if (product is null)
-            return Result.Failure(ProductErrors.NotFound);
+            return Result.Failure(ProductErrors.NotFound);  
 
-        var result = product.ChangePrice(request.NewPrice);
+        var currency = Currency.FromCode(request.Currency);
+        var price = new Money(request.PriceAmount, currency);
+
+        var result = product.ChangePrice(price);
 
         if (result.IsFailure)
             return result;

@@ -5,7 +5,8 @@ namespace ProductCatalog.Application.Catalog.CreateProduct;
 
 public sealed record CreateProductCommand(
     string Name,
-    string Description,
-    Money Price,
+    string? Description,
+    string Sku,
     Guid CategoryId,
-    string Sku) : ICommand<Guid>;
+    decimal PriceAmount,
+    string Currency) : ICommand<Guid>;

@@ -1,11 +1,14 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using ProductCatalog.Api.Common;
+using ProductCatalog.Application.Order;
 using ProductCatalog.Application.Order.CancelOrder;
 using ProductCatalog.Application.Order.CreateOrder;
 using ProductCatalog.Application.Order.GetAllOrders;
 using ProductCatalog.Application.Order.GetOrderById;
 using ProductCatalog.Application.Order.Responses;
+using ProductCatalog.Application.Payment;
+using ProductCatalog.Application.Payment.GetPaymentsByOrderId;
 
 namespace ProductCatalog.Api.Endpoints.Orders;
 
@@ -20,6 +23,7 @@ public static class OrderEndpoints
         MapGetAllOrders(group);
         MapCreateOrder(group);
         MapCancelOrder(group);
+        MapGetPaymentsByOrderId(group);
 
         return app;
     }
@@ -38,8 +42,8 @@ public static class OrderEndpoints
             .WithName("GetOrderById")
             .WithSummary("Gets an order by id")
             .Produces<OrderResponse>(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status404NotFound)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
     }
 
     private static void MapCreateOrder(RouteGroupBuilder group)
@@ -49,7 +53,15 @@ public static class OrderEndpoints
             ISender sender,
             CancellationToken ct) =>
         {
-            var command = new CreateOrderCommand(request.CustomerEmail, request.CustomerId, request.Items);
+            var command = new CreateOrderCommand(
+                request.CustomerEmail, 
+                request.CustomerId,
+                request.Items.Select(i => new CreateOrderItemDto(
+                i.ProductId,
+                i.Quantity,
+                i.UnitPriceAmount,
+                i.Currency)).ToList());
+
             var result = await sender.Send(command, ct);
 
             if (result.IsSuccess)
@@ -86,13 +98,30 @@ public static class OrderEndpoints
             ISender sender,
             CancellationToken ct) =>
         {
-            var result = await sender.Send(new CancelOrderCommand(orderId, request.Reason), ct);
+            var result = await sender.Send(new CancelOrderCommand(orderId, request.Reason!), ct);
             return result.ToHttpResult();
         })
             .WithName("CancelOrder")
             .WithSummary("Cancels an order")
             .Produces(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+    }
+
+    private static void MapGetPaymentsByOrderId(RouteGroupBuilder group)
+    {
+        group.MapGet("/{orderId:guid}/payments", async (
+            Guid orderId,
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var result = await sender.Send(new GetPaymentsByOrderIdQuery(orderId), ct);
+
+            return result.ToHttpResult();
+        })
+            .WithName("GetPaymentsByOrderId")
+            .WithSummary("Get payments by order id")
+            .Produces<IReadOnlyList<PaymentResponse>>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
     }
 }

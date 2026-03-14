@@ -6,48 +6,33 @@ namespace ProductCatalog.Api.Common;
 public static class ResultExtensions
 {
     public static IResult ToHttpResult<T>(this Result<T> result)
-    {
-        if (result.IsSuccess)
-            return Results.Ok(result.Value);
-
-        return result.Error.Code switch
-        {
-            "Order.NotFound" => Results.NotFound(),
-
-            "Order.ConcurrencyConflict" => Results.Conflict(new ProblemDetails
-            {
-                Title = "Concurrency conflict",
-                Detail = result.Error.Message
-            }),
-
-            _ => Results.BadRequest(new ProblemDetails
-            {
-                Title = "Request failed",
-                Detail = result.Error.Message
-            })
-        };
-    }
+        => result.IsSuccess
+            ? Results.Ok(result.Value)
+            : result.Error.ToHttpResult();
 
     public static IResult ToHttpResult(this Result result)
-    {
-        if (result.IsSuccess)
-            return Results.Ok();
+        => result.IsSuccess
+            ? Results.NoContent()
+            : result.Error.ToHttpResult();
 
-        return result.Error.Code switch
+    private static IResult ToHttpResult(this Error error) =>
+        error.Type switch
         {
-            "Order.NotFound" => Results.NotFound(),
-
-            "Order.ConcurrencyConflict" => Results.Conflict(new ProblemDetails
+            ErrorType.NotFound => Results.NotFound(),
+            ErrorType.Conflict => Results.Conflict(new ProblemDetails
             {
-                Title = "Concurrency conflict",
-                Detail = result.Error.Message
+                Title = "Conflict",
+                Detail = error.Message
             }),
-
+            ErrorType.Validation => Results.UnprocessableEntity(new ProblemDetails
+            {
+                Title = "Validation error",
+                Detail = error.Message
+            }),
             _ => Results.BadRequest(new ProblemDetails
             {
                 Title = "Request failed",
-                Detail = result.Error.Message
+                Detail = error.Message
             })
         };
-    }
 }

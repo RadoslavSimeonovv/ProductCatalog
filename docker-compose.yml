@@ -1,0 +1,21 @@
+services:
+  productcatalog.api:
+    image: ${DOCKER_REGISTRY-}productcatalogapi
+    container_name: ProductCatalog.Api
+    build:
+      context: .
+      dockerfile: ProductCatalog.Api/Dockerfile
+    depends_on:
+      - productcatalog.db
+
+  productcatalog.db:
+    image: postgres:latest
+    container_name: ProductCatalog.Db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=productcatalog
+    volumes:
+      - ./.containers/database:/var/lib/postgresql/data
+    ports:
+      - 5432:5432

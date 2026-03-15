@@ -25,7 +25,7 @@ internal sealed class OrderItemConfiguration : IEntityTypeConfiguration<OrderIte
         builder.OwnsOne(x => x.UnitPrice, unitPriceBuilder =>
         {
             unitPriceBuilder.Property(p => p.Amount)
-                .HasColumnName("UnitPriceAmount")
+                .HasColumnName("unit_price_amount")
                 .HasPrecision(18, 2)
                 .IsRequired();
 
@@ -33,7 +33,7 @@ internal sealed class OrderItemConfiguration : IEntityTypeConfiguration<OrderIte
                 .HasConversion(
                     c => c.Code,
                     code => Currency.FromCode(code))
-                .HasColumnName("UnitPriceCurrency")
+                .HasColumnName("unit_price_currency")
                 .HasMaxLength(3)
                 .IsRequired();
         });
@@ -41,7 +41,7 @@ internal sealed class OrderItemConfiguration : IEntityTypeConfiguration<OrderIte
         builder.OwnsOne(x => x.LineTotal, lineTotalBuilder =>
         {
             lineTotalBuilder.Property(p => p.Amount)
-                .HasColumnName("LineTotalAmount")
+                .HasColumnName("line_total_amount")
                 .HasPrecision(18, 2)
                 .IsRequired();
 
@@ -49,7 +49,7 @@ internal sealed class OrderItemConfiguration : IEntityTypeConfiguration<OrderIte
                 .HasConversion(
                     c => c.Code,
                     code => Currency.FromCode(code))
-                .HasColumnName("LineTotalCurrency")
+                .HasColumnName("line_total_currency")
                 .HasMaxLength(3)
                 .IsRequired();
         });

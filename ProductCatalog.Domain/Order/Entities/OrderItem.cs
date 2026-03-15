@@ -30,6 +30,8 @@ public sealed class OrderItem : Entity
         LineTotal = unitPrice * quantity;
     }
 
+    private OrderItem() { }
+
     public Order? Order { get; private set; }
     public Guid OrderId { get; private set; }
 

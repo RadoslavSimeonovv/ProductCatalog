@@ -27,6 +27,8 @@ public sealed class Payment : Entity
         CreatedAt = createdAt;
     }
 
+    private Payment() { }
+
     public Guid OrderId { get; private set; }
     public CustomerId CustomerId { get; private set; }
     public Money Amount { get; private set; }

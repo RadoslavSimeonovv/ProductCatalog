@@ -44,7 +44,7 @@ internal sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.OwnsOne(x => x.Price, priceBuilder =>
         {
             priceBuilder.Property(p => p.Amount)
-                .HasColumnName("PriceAmount")
+                .HasColumnName("price_amount")
                 .HasPrecision(18, 2)
                 .IsRequired();
 
@@ -52,7 +52,7 @@ internal sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
                 .HasConversion(
                     c => c.Code,
                     code => Currency.FromCode(code))
-                .HasColumnName("PriceCurrency")
+                .HasColumnName("price_currency")
                 .HasMaxLength(3)
                 .IsRequired();
         });

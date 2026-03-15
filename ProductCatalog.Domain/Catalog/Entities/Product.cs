@@ -29,6 +29,8 @@ public sealed class Product : Entity
         Status = ProductStatus.Draft;
         CreatedAt = createdAt;
     }
+
+    private Product() { }
     public string Name { get; private set; }
     public string? Description { get; private set; }
     public Money Price { get; private set; }

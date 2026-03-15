@@ -22,6 +22,8 @@ public sealed class ProductFeature : Entity
         CreatedAt = createdAt;
     }
 
+    private ProductFeature() { }
+
     public string Name { get; private set; }
     public string Value { get; private set; }
     public int DisplayOrder { get; private set; }

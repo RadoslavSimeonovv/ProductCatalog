@@ -23,6 +23,8 @@ public sealed class Order : Entity
         _items = [.. items];
         CreatedAt = createdAt;
     }
+
+    private Order() { }
     public CustomerId CustomerId { get; private set; }
     public string CustomerEmail { get; private set; }
     public Money TotalAmount { get; private set; }

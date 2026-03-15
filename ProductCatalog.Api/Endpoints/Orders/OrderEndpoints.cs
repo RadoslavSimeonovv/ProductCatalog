@@ -92,7 +92,7 @@ public static class OrderEndpoints
 
     private static void MapCancelOrder(RouteGroupBuilder group)
     {
-        group.MapPost("/{orderId:guid}/cancel", async (
+        group.MapPut("/{orderId:guid}/cancel", async (
             Guid orderId,
             CancelOrderRequest request,
             ISender sender,

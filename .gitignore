@@ -416,3 +416,9 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Postgres auto-generated container files
+.containers/
+
+# Backup dockerfile created
+Dockerfile.original

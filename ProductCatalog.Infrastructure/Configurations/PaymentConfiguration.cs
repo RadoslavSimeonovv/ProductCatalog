@@ -47,7 +47,7 @@ internal sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.OwnsOne(x => x.Amount, amountBuilder =>
         {
             amountBuilder.Property(p => p.Amount)
-                .HasColumnName("Amount")
+                .HasColumnName("amount")
                 .HasPrecision(18, 2)
                 .IsRequired();
 
@@ -55,7 +55,7 @@ internal sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
                 .HasConversion(
                     c => c.Code,
                     code => Currency.FromCode(code))
-                .HasColumnName("Currency")
+                .HasColumnName("currency")
                 .HasMaxLength(3)
                 .IsRequired();
         });

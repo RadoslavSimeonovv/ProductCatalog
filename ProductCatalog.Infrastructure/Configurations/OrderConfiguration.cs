@@ -37,7 +37,7 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.OwnsOne(x => x.TotalAmount, totalBuilder =>
         {
             totalBuilder.Property(p => p.Amount)
-                .HasColumnName("TotalAmount")
+                .HasColumnName("total_amount")
                 .HasPrecision(18, 2)
                 .IsRequired();
 
@@ -45,7 +45,7 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
                 .HasConversion(
                     c => c.Code,
                     code => Currency.FromCode(code))
-                .HasColumnName("TotalCurrency")
+                .HasColumnName("total_currency")
                 .HasMaxLength(3)
                 .IsRequired();
         });

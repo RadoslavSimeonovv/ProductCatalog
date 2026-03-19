@@ -19,3 +19,15 @@ services:
       - ./.containers/database:/var/lib/postgresql/data
     ports:
       - 5432:5432
+
+  productcatalog.idp:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: ProductCatalog.Identity
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    volumes:
+      - ./.files/ProductCatalog-realm.json:/opt/keycloak/data/import/ProductCatalog-realm.json:ro
+    ports:
+      - "18080:8080"

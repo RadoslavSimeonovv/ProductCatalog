@@ -1,4 +1,5 @@
-﻿using ProductCatalog.Application.Abstractions.Messaging;
+﻿using ProductCatalog.Application.Abstractions.Authentication;
+using ProductCatalog.Application.Abstractions.Messaging;
 using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Order.Entities;
 using ProductCatalog.Domain.Order.Errors;
@@ -12,20 +13,26 @@ internal sealed class CreateOrderCommandHandler : ICommandHandler<CreateOrderCom
 {
     private readonly IOrderRepository _orderRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICurrentUser _currentUser;
 
     public CreateOrderCommandHandler(
         IOrderRepository orderRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        ICurrentUser currentUser)
     {
         _orderRepository = orderRepository;
         _unitOfWork = unitOfWork;
+        _currentUser = currentUser;
     }
     public async Task<Result<Guid>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
     {
+        if (!_currentUser.IsAuthenticated || string.IsNullOrWhiteSpace(_currentUser.UserId))
+            return Result.Failure<Guid>(OrderErrors.Unauthorized);
+
         if (request.Items is null || request.Items.Count == 0)
             return Result.Failure<Guid>(OrderErrors.EmptyOrder);
 
-        var customerIdResult = CustomerId.Create(request.CustomerId);
+        var customerIdResult = CustomerId.Create(_currentUser.UserId);
         if (customerIdResult.IsFailure)
             return Result.Failure<Guid>(customerIdResult.Error);
 

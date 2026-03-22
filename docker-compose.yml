@@ -29,5 +29,9 @@ services:
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
     volumes:
       - ./.files/ProductCatalog-realm.json:/opt/keycloak/data/import/ProductCatalog-realm.json:ro
+      - keycloak_data:/opt/keycloak/data
     ports:
       - "18080:8080"
+
+volumes:
+  keycloak_data:

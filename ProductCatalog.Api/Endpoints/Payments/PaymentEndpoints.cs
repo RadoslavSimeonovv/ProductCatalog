@@ -40,7 +40,8 @@ public static class PaymentEndpoints
             .WithSummary("Gets a payment by id")
             .Produces<PaymentResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
     }
 
     private static void MapCreatePayment(RouteGroupBuilder group)
@@ -62,7 +63,8 @@ public static class PaymentEndpoints
             .WithName("CreatePayment")
             .WithSummary("Creates a new payment")
             .Produces<Guid>(StatusCodes.Status201Created)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
     }
 
     private static void MapMarkPaymentFailed(RouteGroupBuilder group)
@@ -80,7 +82,8 @@ public static class PaymentEndpoints
             .WithSummary("Marks a payment as failed")
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
     }
 
     private static void MapMarkPaymentSucceeded(RouteGroupBuilder group)
@@ -98,6 +101,7 @@ public static class PaymentEndpoints
             .WithSummary("Marks payment as succeeded")
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
     }
 }

@@ -6,10 +6,6 @@ public class CreateOrderCommandValidator : AbstractValidator<CreateOrderCommand>
 {
     public CreateOrderCommandValidator()
     {
-        RuleFor(x => x.CustomerId)
-            .NotEmpty().WithMessage("CustomerId is required.")
-            .MaximumLength(100).WithMessage("CustomerId cannot exceed 100 characters.");
-
         RuleFor(x => x.CustomerEmail)
             .NotEmpty().WithMessage("Customer email is required.")
             .EmailAddress().WithMessage("Customer email is not valid.")

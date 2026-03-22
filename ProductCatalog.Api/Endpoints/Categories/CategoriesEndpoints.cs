@@ -39,7 +39,8 @@ public static class CategoriesEndpoints
             .WithName("CreateProductCategory")
             .WithSummary("Creates a new product category")
             .Produces(StatusCodes.Status201Created)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
     }
 
     private static void MapUpdateCategory(RouteGroupBuilder group)
@@ -59,7 +60,8 @@ public static class CategoriesEndpoints
             .WithName("UpdateProductCategory")
             .WithSummary("Updates a product category")
             .Produces(StatusCodes.Status204NoContent)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
     }
 
     private static void MapGetAllCategories(RouteGroupBuilder group)

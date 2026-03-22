@@ -1,6 +1,6 @@
 ﻿using ProductCatalog.Application.Abstractions.Email;
 
-namespace Bookify.Infrastructure.Email;
+namespace ProductCatalog.Infrastructure.Email;
 
 internal sealed class EmailService : IEmailService
 {

@@ -14,6 +14,9 @@ public static class OrderErrors
     public static readonly Error InvalidOrderId = 
         new("Order.InvalidOrderId", "Order ID must be a non-empty GUID.", ErrorType.Validation);
 
+    public static readonly Error Unauthorized = 
+        new("Order.Unauthorized", "User is not authorized to perform this action.", ErrorType.Unauthorized);
+
     // Creation / items
     public static readonly Error OrderItemsCannotBeNull =
         new("Order.OrderItemsCannotBeNull", "Order items cannot be null.", ErrorType.Validation);

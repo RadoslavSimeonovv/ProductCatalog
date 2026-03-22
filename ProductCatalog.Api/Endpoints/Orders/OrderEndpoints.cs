@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using ProductCatalog.Api.Common;
+using ProductCatalog.Application.Abstractions.Authentication;
 using ProductCatalog.Application.Order;
 using ProductCatalog.Application.Order.CancelOrder;
 using ProductCatalog.Application.Order.CreateOrder;
@@ -18,6 +19,16 @@ public static class OrderEndpoints
     {
         var group = app.MapGroup("/orders")
             .WithTags("Orders");
+
+        app.MapGet("/me", (ICurrentUser currentUser) =>
+        {
+            return Results.Ok(new
+            {
+                currentUser.IsAuthenticated,
+                currentUser.UserId,
+                currentUser.Email
+            });
+        }).RequireAuthorization();
 
         MapGetOrderById(group);
         MapGetAllOrders(group);
@@ -55,7 +66,6 @@ public static class OrderEndpoints
         {
             var command = new CreateOrderCommand(
                 request.CustomerEmail, 
-                request.CustomerId,
                 request.Items.Select(i => new CreateOrderItemDto(
                 i.ProductId,
                 i.Quantity,
@@ -72,7 +82,8 @@ public static class OrderEndpoints
             .WithName("CreateOrder")
             .WithSummary("Creates a new order")
             .Produces<Guid>(StatusCodes.Status201Created)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
     }
 
     private static void MapGetAllOrders(RouteGroupBuilder group)
@@ -87,7 +98,8 @@ public static class OrderEndpoints
             .WithName("GetAllOrders")
             .WithSummary("Gets all orders")
             .Produces<List<OrderResponse>>(StatusCodes.Status200OK)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
     }
 
     private static void MapCancelOrder(RouteGroupBuilder group)
@@ -105,7 +117,8 @@ public static class OrderEndpoints
             .WithSummary("Cancels an order")
             .Produces(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
     }
 
     private static void MapGetPaymentsByOrderId(RouteGroupBuilder group)
@@ -122,6 +135,7 @@ public static class OrderEndpoints
             .WithName("GetPaymentsByOrderId")
             .WithSummary("Get payments by order id")
             .Produces<IReadOnlyList<PaymentResponse>>(StatusCodes.Status200OK)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
     }
 }

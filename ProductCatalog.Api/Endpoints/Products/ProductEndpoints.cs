@@ -128,7 +128,8 @@ public static class ProductEndpoints
             .WithName("CreateProduct")
             .WithSummary("Creates a new product")
             .Produces<Guid>(StatusCodes.Status201Created)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
     }
 
     private static void MapDeactivateProduct(RouteGroupBuilder group)
@@ -148,7 +149,8 @@ public static class ProductEndpoints
             .WithName("DeactivateProduct")
             .WithSummary("Deactivates a product")
             .Produces(StatusCodes.Status204NoContent)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
     }
 
     private static void MapDiscontinueProduct(RouteGroupBuilder group)
@@ -167,7 +169,8 @@ public static class ProductEndpoints
             .WithName("DiscontinueProduct")
             .WithSummary("Discontinues a product")
             .Produces(StatusCodes.Status204NoContent)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
     }
 
     private static void MapPublishProduct(RouteGroupBuilder group)
@@ -186,7 +189,8 @@ public static class ProductEndpoints
             .WithName("PublishProduct")
             .WithSummary("Publishes a product")
             .Produces(StatusCodes.Status204NoContent)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
     }
 
     private static void MapAddProductFeature(RouteGroupBuilder group)
@@ -206,7 +210,8 @@ public static class ProductEndpoints
             .WithName("AddProductFeature")
             .WithSummary("Adds a feature to a product")
             .Produces(StatusCodes.Status201Created)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
     }
 
     private static void MapChangeProductPrice(RouteGroupBuilder group)
@@ -226,7 +231,8 @@ public static class ProductEndpoints
             .WithName("ChangeProductPrice")
             .WithSummary("Changes the price of a product")
             .Produces(StatusCodes.Status204NoContent)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
     }
 
     private static void MapChangeProductCategory(RouteGroupBuilder group)
@@ -246,7 +252,8 @@ public static class ProductEndpoints
             .WithName("ChangeProductCategory")
             .WithSummary("Changes the category of a product")
             .Produces(StatusCodes.Status204NoContent)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
     }
 
     private static void MapUpdateProductFeature(RouteGroupBuilder group)
@@ -267,7 +274,8 @@ public static class ProductEndpoints
             .WithName("UpdateProductFeature")
             .WithSummary("Updates a feature of a product")
             .Produces(StatusCodes.Status204NoContent)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
     }
 
     private static void MapRemoveProductFeature(RouteGroupBuilder group)
@@ -287,6 +295,7 @@ public static class ProductEndpoints
             .WithName("RemoveProductFeature")
             .WithSummary("Removes a feature from a product")
             .Produces(StatusCodes.Status204NoContent)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
     }
 }

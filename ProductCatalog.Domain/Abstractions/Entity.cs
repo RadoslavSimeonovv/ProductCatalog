@@ -12,7 +12,7 @@ public abstract class Entity
     {
     }
 
-    public Guid Id { get; init; }
+    public Guid Id { get; private set; }
 
     public IReadOnlyCollection<IDomainEvent> GetDomainEvents()
         => _domainEvents.AsReadOnly();

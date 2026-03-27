@@ -1,4 +1,5 @@
 ﻿using ProductCatalog.Domain.Abstractions;
+using ProductCatalog.Domain.Catalog.Errors;
 
 namespace ProductCatalog.Domain.Catalog.Entities;
 
@@ -32,12 +33,14 @@ public sealed class ProductFeature : Entity
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
 
-    internal void UpdateValue(string newValue)
+    internal Result UpdateValue(string newValue)
     {
         if (string.IsNullOrEmpty(newValue))
-            throw new ArgumentException("Feature value cannot be null or empty.", nameof(newValue));
-        
+            return Result.Failure(ProductErrors.InvalidFeatureValue);
+
         Value = newValue;
-        UpdatedAt = DateTime.Now;
+        UpdatedAt = DateTime.UtcNow;
+
+        return Result.Success();
     }
 }

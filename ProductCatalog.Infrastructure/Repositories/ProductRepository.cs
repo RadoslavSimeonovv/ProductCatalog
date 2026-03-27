@@ -22,4 +22,15 @@ internal sealed class ProductRepository : Repository<Product>, IProductRepositor
             .Include(p => p.Category)
             .AsNoTracking()
             .AsQueryable();
+
+    public override async Task<Product?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        => await _dbContext
+            .Products
+            .Include(p => p.Features)
+            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+
+    public void MarkFeatureAsAdded(ProductFeature feature)
+    {
+        _dbContext.Entry(feature).State = EntityState.Added;
+    }
 }

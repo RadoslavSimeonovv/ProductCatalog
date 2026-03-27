@@ -25,7 +25,7 @@ public static class CategoriesEndpoints
     }
     private static void MapCreateCategory(RouteGroupBuilder group)
     {
-        group.MapPost("/categories", async (
+        group.MapPost("/", async (
             CreateCategoryRequest request,
             ISender sender,
             CancellationToken ct) =>
@@ -45,7 +45,7 @@ public static class CategoriesEndpoints
 
     private static void MapUpdateCategory(RouteGroupBuilder group)
     {
-        group.MapPut("/categories/{categoryId:guid}", async (
+        group.MapPut("/{categoryId:guid}", async (
             Guid categoryId,
             UpdateCategoryRequest request,
             ISender sender,
@@ -66,7 +66,7 @@ public static class CategoriesEndpoints
 
     private static void MapGetAllCategories(RouteGroupBuilder group)
     {
-        group.MapGet("/categories", async (
+        group.MapGet("/", async (
             ISender sender,
             CancellationToken ct) =>
         {
@@ -81,7 +81,7 @@ public static class CategoriesEndpoints
 
     private static void MapGetCategoryById(RouteGroupBuilder group)
     {
-        group.MapGet("/categories/{categoryId:guid}", async (
+        group.MapGet("/{categoryId:guid}", async (
             Guid categoryId,
             ISender sender,
             CancellationToken ct) =>

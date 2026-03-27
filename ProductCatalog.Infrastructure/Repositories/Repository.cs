@@ -13,7 +13,7 @@ public abstract class Repository<T>
         _dbContext = dbContext;
     }
 
-    public async Task<T?> GetByIdAsync(
+    public virtual async Task<T?> GetByIdAsync(
         Guid Id, 
         CancellationToken cancellationToken = default)
         => await _dbContext

@@ -31,11 +31,6 @@ internal sealed class ProductFeatureConfiguration : IEntityTypeConfiguration<Pro
 
         builder.Property(x => x.UpdatedAt);
 
-        builder.HasOne(x => x.Product)
-            .WithMany(x => x.Features)
-            .HasForeignKey(x => x.ProductId)
-            .OnDelete(DeleteBehavior.Cascade);
-
         builder.HasIndex(x => new { x.ProductId, x.DisplayOrder });
         builder.HasIndex(x => new { x.ProductId, x.Name }).IsUnique();
     }

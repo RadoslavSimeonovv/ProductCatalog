@@ -35,9 +35,9 @@ internal sealed class CreateProductCommandHandler : ICommandHandler<CreateProduc
         if (skuResult.IsFailure)
             return Result.Failure<Guid>(skuResult.Error);
 
-        var currencyResult = Currency.FromCode(request.Currency);
+        var currency = Currency.FromCode(request.Currency);
 
-        var price = new Money(request.PriceAmount, currencyResult);
+        var price = new Money(request.PriceAmount, currency);
 
         var result = Product.Create(
             request.Name,

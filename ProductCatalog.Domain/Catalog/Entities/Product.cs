@@ -332,7 +332,10 @@ public sealed class Product : Entity
 
         var oldValue = feature.Value;
 
-        feature.UpdateValue(trimmedNewValue);
+        var updateFeatureValueResult = feature.UpdateValue(trimmedNewValue);
+
+        if (updateFeatureValueResult.IsFailure)
+            return updateFeatureValueResult;
 
         var dateTimeNow = DateTime.UtcNow;
         UpdatedAt = dateTimeNow;

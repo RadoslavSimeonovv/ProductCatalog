@@ -18,9 +18,7 @@ internal sealed class GetProductsQueryHandler : IQueryHandler<GetProductsQuery, 
 
     public async Task<Result<PagedResult<ProductResponse>>> Handle(GetProductsQuery request, CancellationToken cancellationToken)
     {
-        var products = request.SortBy == ProductSortBy.Category
-            ? _productRepository.QueryWithCategory()
-            : _productRepository.Query();
+        var products = _productRepository.QueryWithCategory();
 
         var page = request.PageNumber is < 1 ? 1 : request.PageNumber;
         var pageSize = request.PageSize is < 1 ? 10 : request.PageSize;

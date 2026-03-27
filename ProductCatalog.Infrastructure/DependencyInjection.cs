@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using ProductCatalog.Application.Abstractions.Authentication;
 using ProductCatalog.Application.Abstractions.Email;
 using ProductCatalog.Application.Data;
@@ -50,7 +51,10 @@ public static class DependencyInjection
 
         services.AddDbContext<ApplicationDbContext>(options =>
         {
-            options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention();
+            options.UseNpgsql(connectionString)
+                   .UseSnakeCaseNamingConvention()
+                   .EnableSensitiveDataLogging()
+                   .LogTo(Console.WriteLine, LogLevel.Information);
         });
 
         services.AddScoped<IProductRepository, ProductRepository>();

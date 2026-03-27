@@ -1,4 +1,6 @@
-﻿namespace ProductCatalog.Domain.Shared.ValueObjects;
+﻿using ProductCatalog.Domain.Abstractions;
+
+namespace ProductCatalog.Domain.Shared.ValueObjects;
 
 public record Currency
 {

@@ -13,12 +13,16 @@ internal sealed class CurrentUser : ICurrentUser
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public bool IsAuthenticated 
-        => _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
+    private ClaimsPrincipal? Principal => _httpContextAccessor.HttpContext?.User;
 
-    public string? UserId 
-        => _httpContextAccessor.HttpContext?.User?.FindFirstValue("sub");
+    public bool IsAuthenticated
+        => Principal?.Identity?.IsAuthenticated ?? false;
 
-    public string? Email 
-        => _httpContextAccessor.HttpContext?.User?.FindFirstValue("email");
+    public string? UserId
+        => Principal?.FindFirstValue("sub") ??
+           Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+
+    public string? Email
+        => Principal?.FindFirstValue("email") ??
+           Principal?.FindFirstValue(ClaimTypes.Email);
 }

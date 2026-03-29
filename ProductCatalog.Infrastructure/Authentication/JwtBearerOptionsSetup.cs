@@ -27,7 +27,7 @@ internal sealed class JwtBearerOptionsSetup : IConfigureNamedOptions<JwtBearerOp
             ValidIssuer = _authenticationOptions.Issuer,
             ValidAudience = _authenticationOptions.Audience,
             ValidateIssuer = true,
-            ValidateAudience = false,
+            ValidateAudience = true,
             ValidateLifetime = true
         };
     }

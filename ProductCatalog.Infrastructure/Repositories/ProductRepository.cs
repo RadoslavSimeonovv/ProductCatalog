@@ -29,8 +29,4 @@ internal sealed class ProductRepository : Repository<Product>, IProductRepositor
             .Include(p => p.Features)
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
 
-    public void MarkFeatureAsAdded(ProductFeature feature)
-    {
-        _dbContext.Entry(feature).State = EntityState.Added;
-    }
 }

@@ -31,9 +31,6 @@ internal sealed class AddProductFeatureCommandHandler : ICommandHandler<AddProdu
         if (result.IsFailure)
             return Result.Failure<Guid>(result.Error);
 
-        var feature = product.Features.Single(f => f.Id == featureId);
-        _productRepository.MarkFeatureAsAdded(feature);
-
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Success(featureId);

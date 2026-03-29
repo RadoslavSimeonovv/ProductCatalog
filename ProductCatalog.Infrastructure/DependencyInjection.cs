@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ProductCatalog.Application.Abstractions.Authentication;
 using ProductCatalog.Application.Abstractions.Email;
@@ -21,15 +22,18 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IHostEnvironment environment)
     {
         services.AddTransient<IEmailService, EmailService>();
 
-        AddPersistence(services, configuration);
+        AddPersistence(services, configuration, environment);
 
         services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer();
+
+        services.AddAuthorization();
 
         services.Configure<AuthenticationOptions>(configuration.GetSection("Authentication"));
 
@@ -43,7 +47,8 @@ public static class DependencyInjection
     }
 
     private static void AddPersistence(this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IHostEnvironment environment)
     {
         var connectionString =
             configuration.GetConnectionString("Database") ??
@@ -52,9 +57,13 @@ public static class DependencyInjection
         services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseNpgsql(connectionString)
-                   .UseSnakeCaseNamingConvention()
-                   .EnableSensitiveDataLogging()
-                   .LogTo(Console.WriteLine, LogLevel.Information);
+                   .UseSnakeCaseNamingConvention();
+
+            if (environment.IsDevelopment())
+            {
+                options.EnableSensitiveDataLogging()
+                       .LogTo(Console.WriteLine, LogLevel.Information);
+            }
         });
 
         services.AddScoped<IProductRepository, ProductRepository>();

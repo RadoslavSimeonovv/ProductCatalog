@@ -129,7 +129,7 @@ public static class ProductEndpoints
             .WithSummary("Creates a new product")
             .Produces<Guid>(StatusCodes.Status201Created)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
-            .RequireAuthorization();
+            .RequireAuthorization(Policies.AdminOnly);
     }
 
     private static void MapDeactivateProduct(RouteGroupBuilder group)
@@ -150,7 +150,7 @@ public static class ProductEndpoints
             .WithSummary("Deactivates a product")
             .Produces(StatusCodes.Status204NoContent)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
-            .RequireAuthorization();
+            .RequireAuthorization(Policies.AdminOnly);
     }
 
     private static void MapDiscontinueProduct(RouteGroupBuilder group)
@@ -170,7 +170,7 @@ public static class ProductEndpoints
             .WithSummary("Discontinues a product")
             .Produces(StatusCodes.Status204NoContent)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
-            .RequireAuthorization();
+            .RequireAuthorization(Policies.AdminOnly);
     }
 
     private static void MapPublishProduct(RouteGroupBuilder group)
@@ -190,7 +190,7 @@ public static class ProductEndpoints
             .WithSummary("Publishes a product")
             .Produces(StatusCodes.Status204NoContent)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
-            .RequireAuthorization();
+            .RequireAuthorization(Policies.AdminOnly);
     }
 
     private static void MapAddProductFeature(RouteGroupBuilder group)
@@ -211,7 +211,7 @@ public static class ProductEndpoints
             .WithSummary("Adds a feature to a product")
             .Produces(StatusCodes.Status201Created)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
-            .RequireAuthorization();
+            .RequireAuthorization(Policies.AdminOnly);
     }
 
     private static void MapChangeProductPrice(RouteGroupBuilder group)
@@ -232,7 +232,7 @@ public static class ProductEndpoints
             .WithSummary("Changes the price of a product")
             .Produces(StatusCodes.Status204NoContent)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
-            .RequireAuthorization();
+            .RequireAuthorization(Policies.AdminOnly);
     }
 
     private static void MapChangeProductCategory(RouteGroupBuilder group)
@@ -253,7 +253,7 @@ public static class ProductEndpoints
             .WithSummary("Changes the category of a product")
             .Produces(StatusCodes.Status204NoContent)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
-            .RequireAuthorization();
+            .RequireAuthorization(Policies.AdminOnly);
     }
 
     private static void MapUpdateProductFeature(RouteGroupBuilder group)
@@ -275,7 +275,7 @@ public static class ProductEndpoints
             .WithSummary("Updates a feature of a product")
             .Produces(StatusCodes.Status204NoContent)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
-            .RequireAuthorization();
+            .RequireAuthorization(Policies.AdminOnly);
     }
 
     private static void MapRemoveProductFeature(RouteGroupBuilder group)
@@ -296,6 +296,6 @@ public static class ProductEndpoints
             .WithSummary("Removes a feature from a product")
             .Produces(StatusCodes.Status204NoContent)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
-            .RequireAuthorization();
+            .RequireAuthorization(Policies.AdminOnly);
     }
 }

@@ -28,7 +28,7 @@ public static class OrderEndpoints
                 currentUser.UserId,
                 currentUser.Email
             });
-        }).RequireAuthorization();
+        }).RequireAuthorization(Policies.AdminOrCustomer);
 
         MapGetOrderById(group);
         MapGetAllOrders(group);
@@ -54,7 +54,8 @@ public static class OrderEndpoints
             .WithSummary("Gets an order by id")
             .Produces<OrderResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status400BadRequest);
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .RequireAuthorization(Policies.AdminOrCustomer);
     }
 
     private static void MapCreateOrder(RouteGroupBuilder group)
@@ -83,7 +84,7 @@ public static class OrderEndpoints
             .WithSummary("Creates a new order")
             .Produces<Guid>(StatusCodes.Status201Created)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
-            .RequireAuthorization();
+            .RequireAuthorization(Policies.CustomerOnly);
     }
 
     private static void MapGetAllOrders(RouteGroupBuilder group)
@@ -99,7 +100,7 @@ public static class OrderEndpoints
             .WithSummary("Gets all orders")
             .Produces<List<OrderResponse>>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
-            .RequireAuthorization();
+            .RequireAuthorization(Policies.AdminOnly);
     }
 
     private static void MapCancelOrder(RouteGroupBuilder group)
@@ -118,7 +119,7 @@ public static class OrderEndpoints
             .Produces(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
-            .RequireAuthorization();
+            .RequireAuthorization(Policies.AdminOrCustomer);
     }
 
     private static void MapGetPaymentsByOrderId(RouteGroupBuilder group)
@@ -136,6 +137,6 @@ public static class OrderEndpoints
             .WithSummary("Get payments by order id")
             .Produces<IReadOnlyList<PaymentResponse>>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
-            .RequireAuthorization();
+            .RequireAuthorization(Policies.AdminOrCustomer);
     }
 }

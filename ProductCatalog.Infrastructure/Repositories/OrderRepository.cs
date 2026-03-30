@@ -11,6 +11,12 @@ internal sealed class OrderRepository : Repository<Order>, IOrderRepository
     {
     }
 
+    public override Task<Order?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        => _dbContext
+            .Orders
+            .Include(o => o.Items)
+            .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
+
     public Task<List<Order>> GetAllAsync(CancellationToken cancellationToken = default)
         => _dbContext
             .Orders

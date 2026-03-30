@@ -25,4 +25,7 @@ internal sealed class CurrentUser : ICurrentUser
     public string? Email
         => Principal?.FindFirstValue("email") ??
            Principal?.FindFirstValue(ClaimTypes.Email);
+
+    public bool IsInRole(string role)
+        => Principal?.IsInRole(role) ?? false;
 }

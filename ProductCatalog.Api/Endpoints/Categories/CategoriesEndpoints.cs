@@ -40,7 +40,7 @@ public static class CategoriesEndpoints
             .WithSummary("Creates a new product category")
             .Produces(StatusCodes.Status201Created)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
-            .RequireAuthorization();
+            .RequireAuthorization(Policies.AdminOnly);
     }
 
     private static void MapUpdateCategory(RouteGroupBuilder group)
@@ -61,7 +61,7 @@ public static class CategoriesEndpoints
             .WithSummary("Updates a product category")
             .Produces(StatusCodes.Status204NoContent)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
-            .RequireAuthorization();
+            .RequireAuthorization(Policies.AdminOnly);
     }
 
     private static void MapGetAllCategories(RouteGroupBuilder group)

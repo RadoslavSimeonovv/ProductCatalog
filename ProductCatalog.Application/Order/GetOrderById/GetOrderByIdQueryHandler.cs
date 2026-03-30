@@ -1,4 +1,5 @@
-﻿using ProductCatalog.Application.Abstractions.Messaging;
+﻿using ProductCatalog.Application.Abstractions.Authentication;
+using ProductCatalog.Application.Abstractions.Messaging;
 using ProductCatalog.Application.Order.Responses;
 using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Order.Errors;
@@ -9,9 +10,12 @@ namespace ProductCatalog.Application.Order.GetOrderById;
 internal sealed class GetOrderByIdQueryHandler : IQueryHandler<GetOrderByIdQuery, OrderResponse>
 {
     private readonly IOrderRepository _orderRepository;
-    public GetOrderByIdQueryHandler(IOrderRepository orderRepository)
+    private readonly ICurrentUser _currentUser;
+
+    public GetOrderByIdQueryHandler(IOrderRepository orderRepository, ICurrentUser currentUser)
     {
         _orderRepository = orderRepository;
+        _currentUser = currentUser;
     }
     public async Task<Result<OrderResponse>> Handle(GetOrderByIdQuery request, CancellationToken cancellationToken)
     {
@@ -20,10 +24,14 @@ internal sealed class GetOrderByIdQueryHandler : IQueryHandler<GetOrderByIdQuery
         if (order is null)
             return Result.Failure<OrderResponse>(OrderErrors.NotFound);
 
+        if (!_currentUser.IsInRole(Roles.Admin) && order.CustomerId.Value != _currentUser.UserId)
+            return Result.Failure<OrderResponse>(OrderErrors.Unauthorized);
+
         var orderResponse = new OrderResponse()
         {
-            CustomerEmail = order.CustomerEmail,
             Id = order.Id,
+            CustomerId = order.CustomerId.Value,
+            CustomerEmail = order.CustomerEmail,
             Status = order.Status.ToString(),
             Items = order.Items.Select(i => new OrderItemResponse()
             {

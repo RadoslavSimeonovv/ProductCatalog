@@ -19,6 +19,7 @@ public static class ResultExtensions
         error.Type switch
         {
             ErrorType.NotFound => Results.NotFound(),
+            ErrorType.Unauthorized => Results.Forbid(),
             ErrorType.Conflict => Results.Conflict(new ProblemDetails
             {
                 Title = "Conflict",

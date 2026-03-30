@@ -24,6 +24,7 @@ internal sealed class GetAllOrdersQueryHandler : IQueryHandler<GetAllOrdersQuery
         {
             Id = order.Id,
             CustomerEmail = order.CustomerEmail,
+            CustomerId = order.CustomerId.Value,
             Status = order.Status.ToString(),
             Items = order.Items.Select(item => new OrderItemResponse
             {

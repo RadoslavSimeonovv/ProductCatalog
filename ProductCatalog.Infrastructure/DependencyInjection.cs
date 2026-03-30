@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,8 @@ using ProductCatalog.Infrastructure.Authentication;
 using ProductCatalog.Infrastructure.Data;
 using ProductCatalog.Infrastructure.Email;
 using ProductCatalog.Infrastructure.Repositories;
+
+using ApplicationRoles = ProductCatalog.Application.Abstractions.Authentication.Roles;
 
 namespace ProductCatalog.Infrastructure;
 
@@ -33,9 +36,16 @@ public static class DependencyInjection
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer();
 
-        services.AddAuthorization();
+        services.AddTransient<IClaimsTransformation, KeycloakRoleClaimsTransformation>();
 
-        services.Configure<AuthenticationOptions>(configuration.GetSection("Authentication"));
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy(Policies.AdminOnly, policy => policy.RequireRole(ApplicationRoles.Admin));
+            options.AddPolicy(Policies.CustomerOnly, policy => policy.RequireRole(ApplicationRoles.Customer));
+            options.AddPolicy(Policies.AdminOrCustomer, policy => policy.RequireRole(ApplicationRoles.Admin, ApplicationRoles.Customer));
+        });
+
+        services.Configure<Authentication.AuthenticationOptions>(configuration.GetSection("Authentication"));
 
         services.ConfigureOptions<JwtBearerOptionsSetup>();
 

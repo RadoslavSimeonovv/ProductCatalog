@@ -1,4 +1,5 @@
-﻿using ProductCatalog.Application.Abstractions.Messaging;
+﻿using ProductCatalog.Application.Abstractions.Authentication;
+using ProductCatalog.Application.Abstractions.Messaging;
 using ProductCatalog.Application.Exceptions;
 using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Order.Errors;
@@ -10,11 +11,13 @@ internal sealed class CancelOrderCommandHandler : ICommandHandler<CancelOrderCom
 {
     private readonly IOrderRepository _orderRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICurrentUser _currentUser;
 
-    public CancelOrderCommandHandler(IOrderRepository orderRepository, IUnitOfWork unitOfWork)
+    public CancelOrderCommandHandler(IOrderRepository orderRepository, IUnitOfWork unitOfWork, ICurrentUser currentUser)
     {
         _orderRepository = orderRepository;
         _unitOfWork = unitOfWork;
+        _currentUser = currentUser;
     }
     public async Task<Result> Handle(CancelOrderCommand request, CancellationToken cancellationToken)
     {
@@ -22,6 +25,9 @@ internal sealed class CancelOrderCommandHandler : ICommandHandler<CancelOrderCom
 
         if (order == null)
             return Result.Failure(OrderErrors.NotFound);
+
+        if (!_currentUser.IsInRole(Roles.Admin) && order.CustomerId.Value != _currentUser.UserId)
+            return Result.Failure(OrderErrors.Unauthorized);
 
         var result = order.Cancel(request.Reason);
 

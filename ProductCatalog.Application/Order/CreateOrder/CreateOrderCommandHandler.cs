@@ -26,7 +26,9 @@ internal sealed class CreateOrderCommandHandler : ICommandHandler<CreateOrderCom
     }
     public async Task<Result<Guid>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
     {
-        if (!_currentUser.IsAuthenticated || string.IsNullOrWhiteSpace(_currentUser.UserId))
+        if (!_currentUser.IsAuthenticated
+            || string.IsNullOrWhiteSpace(_currentUser.UserId)
+            || string.IsNullOrWhiteSpace(_currentUser.Email))
             return Result.Failure<Guid>(OrderErrors.Unauthorized);
 
         if (request.Items is null || request.Items.Count == 0)
@@ -55,7 +57,7 @@ internal sealed class CreateOrderCommandHandler : ICommandHandler<CreateOrderCom
             items.Add(item);
         }
 
-        var createResult = OrderEntity.Create(orderId, customerIdResult.Value, request.CustomerEmail, items);
+        var createResult = OrderEntity.Create(orderId, customerIdResult.Value, _currentUser.Email!, items);
         if (createResult.IsFailure)
             return Result.Failure<Guid>(createResult.Error);
 

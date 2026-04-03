@@ -66,7 +66,6 @@ public static class OrderEndpoints
             CancellationToken ct) =>
         {
             var command = new CreateOrderCommand(
-                request.CustomerEmail, 
                 request.Items.Select(i => new CreateOrderItemDto(
                 i.ProductId,
                 i.Quantity,

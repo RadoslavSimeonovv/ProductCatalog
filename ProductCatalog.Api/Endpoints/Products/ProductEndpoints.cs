@@ -61,7 +61,8 @@ public static class ProductEndpoints
             .WithSummary("Gets a product by id")
             .Produces<ProductResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .AllowAnonymous();
     }
 
     private static void MapGetProducts(RouteGroupBuilder group)
@@ -85,7 +86,8 @@ public static class ProductEndpoints
             .WithName("GetProducts")
             .WithSummary("Gets all products")
             .Produces<PagedResult<ProductResponse>>(StatusCodes.Status200OK)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .AllowAnonymous();
     }
 
     private static void MapGetProductFeatures(RouteGroupBuilder group)
@@ -102,7 +104,8 @@ public static class ProductEndpoints
             .WithSummary("Gets features of a product")
             .Produces<GetProductFeaturesQueryResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .AllowAnonymous();
     }
 
     private static void MapCreateProduct(RouteGroupBuilder group)

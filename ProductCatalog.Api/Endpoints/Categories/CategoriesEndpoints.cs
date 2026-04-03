@@ -76,7 +76,8 @@ public static class CategoriesEndpoints
             .WithName("GetAllCategories")
             .WithSummary("Gets all categories")
             .Produces<IReadOnlyList<ProductCategoryResponse>>(StatusCodes.Status200OK)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .AllowAnonymous();
     }
 
     private static void MapGetCategoryById(RouteGroupBuilder group)
@@ -93,6 +94,7 @@ public static class CategoriesEndpoints
             .WithSummary("Gets a category by id")
             .Produces<ProductCategoryResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
-            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .AllowAnonymous();
     }
 }

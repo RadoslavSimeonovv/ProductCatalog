@@ -8,6 +8,9 @@ public static class PaymentErrors
     public static readonly Error NotFound =
         new("Payment.NotFound", "Payment was not found.", ErrorType.NotFound);
 
+    public static readonly Error Unauthorized =
+        new("Payment.Unauthorized", "User is not authorized to perform this action.", ErrorType.Unauthorized);
+
     public static readonly Error InvalidState =
         new("Payment.InvalidState", "Payment is in an invalid state for this operation.", ErrorType.Validation);
 

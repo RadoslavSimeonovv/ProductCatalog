@@ -5,8 +5,12 @@ using ProductCatalog.Api.Endpoints.Products;
 using ProductCatalog.Api.Extensions;
 using ProductCatalog.Application;
 using ProductCatalog.Infrastructure;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, configuration) =>
+    configuration.ReadFrom.Configuration(context.Configuration));
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -24,11 +28,15 @@ if (app.Environment.IsDevelopment())
     app.ApplyMigrations();
 }
 
-app.UseHttpsRedirection();
+app.UseRequestContextLogging();
 
 app.UseCustomExceptionHandler();
 
+app.UseSerilogRequestLogging();
+
 app.UseAuthentication();
+
+app.UseUserContextLogging();
 
 app.UseAuthorization();
 

@@ -1,41 +1,61 @@
-﻿using MediatR;
+﻿using System.Diagnostics;
+using MediatR;
 using Microsoft.Extensions.Logging;
-using ProductCatalog.Application.Abstractions.Messaging;
+using ProductCatalog.Domain.Abstractions;
+using Serilog.Context;
 
 namespace ProductCatalog.Application.Abstractions.Behaviors;
 
 public class LoggingBehavior<TRequest, TResponse>
     : IPipelineBehavior<TRequest, TResponse>
-    where TRequest : IBaseCommand
+    where TRequest : IBaseRequest
+    where TResponse : Result
 {
-    private readonly ILogger<TRequest> _logger;
+    private readonly ILogger<LoggingBehavior<TRequest, TResponse>> _logger;
 
-    public LoggingBehavior(ILogger<TRequest> logger)
+    public LoggingBehavior(ILogger<LoggingBehavior<TRequest, TResponse>> logger)
     {
         _logger = logger;
     }
 
     public async Task<TResponse> Handle(
-        TRequest request, 
-        RequestHandlerDelegate<TResponse> next, 
+        TRequest request,
+        RequestHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
         var name = request.GetType().Name;
+        var stopwatch = Stopwatch.StartNew();
 
-        try
+        using (_logger.BeginScope("{Request}", name))
         {
-            _logger.LogInformation("Executing command: {Command}", name);
+            try
+            {
+                _logger.LogInformation("Executing request: {Request}", name);
 
-            var result = await next();
+                var result = await next();
 
-            _logger.LogInformation("Command executed successfully: {Command}", name);
+                stopwatch.Stop();
 
-            return result;
-        }
-        catch (Exception exception)
-        {
-            _logger.LogError(exception, "Error executing command: {Command}", name);
-            throw;
+                if (result.IsSuccess)
+                {
+                    _logger.LogInformation("Request executed successfully: {Request} ({ElapsedMs}ms)", name, stopwatch.ElapsedMilliseconds);
+                }
+                else
+                {
+                    using (LogContext.PushProperty("Error", result.Error, true))
+                    {
+                        _logger.LogWarning("Request executed with errors: {Request} ({ElapsedMs}ms)", name, stopwatch.ElapsedMilliseconds);
+                    }
+                }
+
+                return result;
+            }
+            catch (Exception exception)
+            {
+                stopwatch.Stop();
+                _logger.LogError(exception, "Error executing request: {Request} ({ElapsedMs}ms)", name, stopwatch.ElapsedMilliseconds);
+                throw;
+            }
         }
     }
 }

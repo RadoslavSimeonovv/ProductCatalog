@@ -7,6 +7,7 @@ services:
       dockerfile: ProductCatalog.Api/Dockerfile
     depends_on:
       - productcatalog.db
+      - productcatalog.seq
 
   productcatalog.db:
     image: postgres:latest
@@ -18,7 +19,7 @@ services:
     volumes:
       - ./.containers/database:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - 5400:5432
 
   productcatalog.idp:
     image: quay.io/keycloak/keycloak:latest
@@ -32,6 +33,16 @@ services:
       - keycloak_data:/opt/keycloak/data
     ports:
       - "18080:8080"
+  
+  productcatalog.seq:
+    image: datalust/seq:latest
+    container_name: ProductCatalog.Seq
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_ADMINPASSWORD=admin
+    ports:
+      - 5341:5341
+      - 8081:80
 
 volumes:
   keycloak_data:

@@ -1,3 +1,5 @@
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using ProductCatalog.Api.Endpoints.Categories;
 using ProductCatalog.Api.Endpoints.Orders;
 using ProductCatalog.Api.Endpoints.Payments;
@@ -44,5 +46,10 @@ app.MapOrderEndpoints();
 app.MapPaymentEndpoints();
 app.MapProductEndpoints();
 app.MapCategoryEndpoints();
+
+app.MapHealthChecks("health", new HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
 
 app.Run();

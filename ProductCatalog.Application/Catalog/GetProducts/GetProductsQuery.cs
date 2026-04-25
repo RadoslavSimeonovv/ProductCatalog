@@ -1,4 +1,4 @@
-﻿using ProductCatalog.Application.Abstractions.Messaging;
+using ProductCatalog.Application.Abstractions.Caching;
 using ProductCatalog.Application.Catalog.PaginatedResponse;
 using ProductCatalog.Application.Catalog.Responses;
 using ProductCatalog.Domain.Catalog.Enums;
@@ -12,4 +12,10 @@ public sealed record GetProductsQuery(
     Guid? CategoryId = null,
     ProductSortBy SortBy = ProductSortBy.Name,
     string? SearchTerm = null)
-    : IQuery<PagedResult<ProductResponse>>;
+    : ICachedQuery<PagedResult<ProductResponse>>
+{
+    public string CacheKey =>
+        $"products:list:{PageNumber}:{PageSize}:{ProductStatus}:{CategoryId}:{SortBy}:{SearchTerm}";
+
+    public TimeSpan? Expiration => TimeSpan.FromMinutes(2);
+}

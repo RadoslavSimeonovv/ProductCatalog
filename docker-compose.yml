@@ -5,6 +5,8 @@ services:
     build:
       context: .
       dockerfile: ProductCatalog.Api/Dockerfile
+    ports:
+      - "5000:8080"
     depends_on:
       - productcatalog.db
       - productcatalog.seq
@@ -43,6 +45,13 @@ services:
     ports:
       - 5341:5341
       - 8081:80
+   
+  productcatalog.redis:
+    image: redis:latest
+    container_name: ProductCatalog.Redis
+    restart: always
+    ports:
+      - '6830:6379'
 
 volumes:
   keycloak_data:

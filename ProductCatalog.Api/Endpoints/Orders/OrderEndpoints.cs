@@ -15,12 +15,12 @@ namespace ProductCatalog.Api.Endpoints.Orders;
 
 public static class OrderEndpoints
 {
-    public static IEndpointRouteBuilder MapOrderEndpoints(this IEndpointRouteBuilder app)
+    public static RouteGroupBuilder MapOrderEndpoints(this RouteGroupBuilder app)
     {
         var group = app.MapGroup("/orders")
             .WithTags("Orders");
 
-        app.MapGet("/me", (ICurrentUser currentUser) =>
+        group.MapGet("/me", (ICurrentUser currentUser) =>
         {
             return Results.Ok(new
             {
@@ -36,7 +36,7 @@ public static class OrderEndpoints
         MapCancelOrder(group);
         MapGetPaymentsByOrderId(group);
 
-        return app;
+        return group;
     }
 
     private static void MapGetOrderById(RouteGroupBuilder group)

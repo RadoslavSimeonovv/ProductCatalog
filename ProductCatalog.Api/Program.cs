@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using ProductCatalog.Api.Endpoints.Categories;
@@ -15,7 +16,10 @@ builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new() { Title = "ProductCatalog API", Version = "v1" });
+});
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
@@ -25,7 +29,10 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+    });
 
     app.ApplyMigrations();
 }
@@ -42,10 +49,13 @@ app.UseUserContextLogging();
 
 app.UseAuthorization();
 
-app.MapOrderEndpoints();
-app.MapPaymentEndpoints();
-app.MapProductEndpoints();
-app.MapCategoryEndpoints();
+var v1 = app.NewVersionedApi();
+var v1Group = v1.MapGroup("/api/v{version:apiVersion}").HasApiVersion(1);
+
+v1Group.MapProductEndpoints();
+v1Group.MapCategoryEndpoints();
+v1Group.MapOrderEndpoints();
+v1Group.MapPaymentEndpoints();
 
 app.MapHealthChecks("health", new HealthCheckOptions
 {

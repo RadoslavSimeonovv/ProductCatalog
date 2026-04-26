@@ -51,7 +51,7 @@ internal sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
             priceBuilder.Property(p => p.Currency)
                 .HasConversion(
                     c => c.Code,
-                    code => Currency.FromCode(code))
+                    code => Currency.FromCode(code).Value)
                 .HasColumnName("price_currency")
                 .HasMaxLength(3)
                 .IsRequired();

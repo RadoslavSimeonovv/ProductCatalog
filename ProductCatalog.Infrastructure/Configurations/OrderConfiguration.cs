@@ -44,7 +44,7 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
             totalBuilder.Property(p => p.Currency)
                 .HasConversion(
                     c => c.Code,
-                    code => Currency.FromCode(code))
+                    code => Currency.FromCode(code).Value)
                 .HasColumnName("total_currency")
                 .HasMaxLength(3)
                 .IsRequired();

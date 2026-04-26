@@ -11,7 +11,7 @@ namespace ProductCatalog.Api.Endpoints.Payments;
 
 public static class PaymentEndpoints
 {
-    public static IEndpointRouteBuilder MapPaymentEndpoints(this IEndpointRouteBuilder app)
+    public static RouteGroupBuilder MapPaymentEndpoints(this RouteGroupBuilder app)
     {
         var group = app.MapGroup("/payments")
             .WithTags("Payments");
@@ -21,7 +21,7 @@ public static class PaymentEndpoints
         MapMarkPaymentFailed(group);
         MapMarkPaymentSucceeded(group);
 
-        return app;
+        return group;
     }
 
     private static void MapGetPaymentById(RouteGroupBuilder group)

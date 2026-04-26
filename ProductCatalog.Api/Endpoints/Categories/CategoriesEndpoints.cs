@@ -5,13 +5,13 @@ using ProductCatalog.Application.Catalog.CreateCategory;
 using ProductCatalog.Application.Catalog.GetAllCategories;
 using ProductCatalog.Application.Catalog.GetCategoryById;
 using ProductCatalog.Application.Catalog.Responses;
-using ProductCatalog.Application.Catalog.UpdateCategoryCommand;
+using ProductCatalog.Application.Catalog.UpdateCategory;
 
 namespace ProductCatalog.Api.Endpoints.Categories;
 
 public static class CategoriesEndpoints
 {
-    public static IEndpointRouteBuilder MapCategoryEndpoints(this IEndpointRouteBuilder app)
+    public static RouteGroupBuilder MapCategoryEndpoints(this RouteGroupBuilder app)
     {
         var group = app.MapGroup("/categories")
             .WithTags("Categories");
@@ -21,7 +21,7 @@ public static class CategoriesEndpoints
         MapGetCategoryById(group);
         MapUpdateCategory(group);
 
-        return app;
+        return group;
     }
     private static void MapCreateCategory(RouteGroupBuilder group)
     {

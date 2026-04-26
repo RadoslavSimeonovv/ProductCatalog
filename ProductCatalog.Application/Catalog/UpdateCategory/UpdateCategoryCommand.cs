@@ -1,6 +1,6 @@
 ﻿using ProductCatalog.Application.Abstractions.Messaging;
 
-namespace ProductCatalog.Application.Catalog.UpdateCategoryCommand;
+namespace ProductCatalog.Application.Catalog.UpdateCategory;
 
 public sealed record UpdateCategoryCommand(
     Guid Id,

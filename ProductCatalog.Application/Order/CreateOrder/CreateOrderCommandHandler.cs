@@ -44,8 +44,11 @@ internal sealed class CreateOrderCommandHandler : ICommandHandler<CreateOrderCom
 
         foreach (var dto in request.Items)
         {
-            var currency = Currency.FromCode(dto.Currency);
-            var unitPrice = new Money(dto.UnitPriceAmount, currency);
+            var currencyResult = Currency.FromCode(dto.Currency);
+            if (currencyResult.IsFailure)
+                return Result.Failure<Guid>(currencyResult.Error);
+
+            var unitPrice = new Money(dto.UnitPriceAmount, currencyResult.Value);
 
             var item = new OrderItem(
                 id: Guid.NewGuid(),

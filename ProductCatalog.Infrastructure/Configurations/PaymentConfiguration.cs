@@ -54,7 +54,7 @@ internal sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
             amountBuilder.Property(p => p.Currency)
                 .HasConversion(
                     c => c.Code,
-                    code => Currency.FromCode(code))
+                    code => Currency.FromCode(code).Value)
                 .HasColumnName("currency")
                 .HasMaxLength(3)
                 .IsRequired();

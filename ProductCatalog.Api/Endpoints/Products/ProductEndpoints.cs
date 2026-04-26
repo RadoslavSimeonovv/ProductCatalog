@@ -1,16 +1,12 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using ProductCatalog.Api.Common;
-using ProductCatalog.Api.Endpoints.Categories;
 using ProductCatalog.Application.Catalog.AddProductFeature;
 using ProductCatalog.Application.Catalog.ChangeProductCategory;
 using ProductCatalog.Application.Catalog.ChangeProductPrice;
-using ProductCatalog.Application.Catalog.CreateCategory;
 using ProductCatalog.Application.Catalog.CreateProduct;
 using ProductCatalog.Application.Catalog.DeactivateProduct;
 using ProductCatalog.Application.Catalog.DiscontinueProduct;
-using ProductCatalog.Application.Catalog.GetAllCategories;
-using ProductCatalog.Application.Catalog.GetCategoryById;
 using ProductCatalog.Application.Catalog.GetProductById;
 using ProductCatalog.Application.Catalog.GetProductFeatures;
 using ProductCatalog.Application.Catalog.GetProducts;
@@ -18,14 +14,13 @@ using ProductCatalog.Application.Catalog.PaginatedResponse;
 using ProductCatalog.Application.Catalog.PublishProduct;
 using ProductCatalog.Application.Catalog.RemoveProductFeature;
 using ProductCatalog.Application.Catalog.Responses;
-using ProductCatalog.Application.Catalog.UpdateCategoryCommand;
 using ProductCatalog.Application.Catalog.UpdateProductFeature;
 
 namespace ProductCatalog.Api.Endpoints.Products;
 
 public static class ProductEndpoints
 {
-    public static IEndpointRouteBuilder MapProductEndpoints(this IEndpointRouteBuilder app)
+    public static RouteGroupBuilder MapProductEndpoints(this RouteGroupBuilder app)
     {
         var group = app.MapGroup("/products")
             .WithTags("Products");
@@ -43,7 +38,7 @@ public static class ProductEndpoints
         MapChangeProductCategory(group);
         MapChangeProductPrice(group);
 
-        return app;
+        return group;
     }
 
     private static void MapGetProductById(RouteGroupBuilder group)

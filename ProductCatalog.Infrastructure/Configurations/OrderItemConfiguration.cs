@@ -32,7 +32,7 @@ internal sealed class OrderItemConfiguration : IEntityTypeConfiguration<OrderIte
             unitPriceBuilder.Property(p => p.Currency)
                 .HasConversion(
                     c => c.Code,
-                    code => Currency.FromCode(code))
+                    code => Currency.FromCode(code).Value)
                 .HasColumnName("unit_price_currency")
                 .HasMaxLength(3)
                 .IsRequired();
@@ -48,7 +48,7 @@ internal sealed class OrderItemConfiguration : IEntityTypeConfiguration<OrderIte
             lineTotalBuilder.Property(p => p.Currency)
                 .HasConversion(
                     c => c.Code,
-                    code => Currency.FromCode(code))
+                    code => Currency.FromCode(code).Value)
                 .HasColumnName("line_total_currency")
                 .HasMaxLength(3)
                 .IsRequired();

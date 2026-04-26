@@ -26,8 +26,11 @@ internal sealed class ChangeProductPriceCommandHandler : ICommandHandler<ChangeP
         if (product is null)
             return Result.Failure(ProductErrors.NotFound);  
 
-        var currency = Currency.FromCode(request.Currency);
-        var price = new Money(request.PriceAmount, currency);
+        var currencyResult = Currency.FromCode(request.Currency);
+        if (currencyResult.IsFailure)
+            return Result.Failure(currencyResult.Error);
+
+        var price = new Money(request.PriceAmount, currencyResult.Value);
 
         var result = product.ChangePrice(price);
 

@@ -3,7 +3,7 @@ using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Catalog.Errors;
 using ProductCatalog.Domain.Catalog.Repositories;
 
-namespace ProductCatalog.Application.Catalog.UpdateCategoryCommand;
+namespace ProductCatalog.Application.Catalog.UpdateCategory;
 
 internal sealed class UpdateCategoryCommandHandler : ICommandHandler<UpdateCategoryCommand>
 {

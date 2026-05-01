@@ -7,6 +7,7 @@ using ProductCatalog.Application.Order.CancelOrder;
 using ProductCatalog.Application.Order.CreateOrder;
 using ProductCatalog.Application.Order.GetAllOrders;
 using ProductCatalog.Application.Order.GetOrderById;
+using ProductCatalog.Application.Order.SubmitOrderForPayment;
 using ProductCatalog.Application.Order.Responses;
 using ProductCatalog.Application.Payment;
 using ProductCatalog.Application.Payment.GetPaymentsByOrderId;
@@ -35,6 +36,7 @@ public static class OrderEndpoints
         MapCreateOrder(group);
         MapCancelOrder(group);
         MapGetPaymentsByOrderId(group);
+        MapSubmitOrderForPayment(group);
 
         return group;
     }
@@ -119,6 +121,30 @@ public static class OrderEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .RequireAuthorization(Policies.AdminOrCustomer);
+    }
+
+    private static void MapSubmitOrderForPayment(RouteGroupBuilder group)
+    {
+        group.MapPost("/{orderId:guid}/submit", async (
+            Guid orderId,
+            SubmitOrderForPaymentRequest request,
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var command = new SubmitOrderForPaymentCommand(orderId, request.Provider, request.IdempotencyKey);
+            var result = await sender.Send(command, ct);
+
+            if (result.IsSuccess)
+                return Results.Created($"/payments/{result.Value}", result.Value);
+
+            return result.ToHttpResult();
+        })
+            .WithName("SubmitOrderForPayment")
+            .WithSummary("Submits an order for payment")
+            .Produces<Guid>(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .RequireAuthorization(Policies.CustomerOnly);
     }
 
     private static void MapGetPaymentsByOrderId(RouteGroupBuilder group)

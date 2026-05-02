@@ -9,7 +9,7 @@ public record Currency
     public static readonly Currency Usd = new("USD");
     public static readonly Currency Eur = new("EUR");
 
-    private Currency(string code) => Code = code;
+    public Currency(string code) => Code = code;
     public string Code { get; init; }
 
     public static Result<Currency> FromCode(string code)

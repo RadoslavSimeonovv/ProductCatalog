@@ -18,7 +18,9 @@ using ProductCatalog.Infrastructure.Authentication;
 using ProductCatalog.Infrastructure.Caching;
 using ProductCatalog.Infrastructure.Data;
 using ProductCatalog.Infrastructure.Email;
+using ProductCatalog.Infrastructure.Outbox;
 using ProductCatalog.Infrastructure.Repositories;
+using Quartz;
 
 using ApplicationRoles = ProductCatalog.Application.Abstractions.Authentication.Roles;
 
@@ -44,6 +46,8 @@ public static class DependencyInjection
         AddHealthChecks(services, configuration);
 
         AddApiVersioning(services);
+
+        AddBackgroundJobs(services, configuration);
 
         return services;
     }
@@ -134,5 +138,26 @@ public static class DependencyInjection
             options.AssumeDefaultVersionWhenUnspecified = true;
             options.ReportApiVersions = true;
         });
+    }
+
+    private static void AddBackgroundJobs(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<OutboxOptions>(configuration.GetSection("Outbox"));
+
+        var intervalInSeconds = configuration.GetValue<int>("Outbox:IntervalInSeconds", 10);
+
+        services.AddQuartz(q =>
+        {
+            var jobKey = JobKey.Create(nameof(ProcessOutboxMessageJob));
+
+            q.AddJob<ProcessOutboxMessageJob>(jobKey)
+             .AddTrigger(t => t
+                 .ForJob(jobKey)
+                 .WithSimpleSchedule(s => s
+                     .WithIntervalInSeconds(intervalInSeconds)
+                     .RepeatForever()));
+        });
+
+        services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
     }
 }

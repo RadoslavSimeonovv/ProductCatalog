@@ -1,22 +1,24 @@
-﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using ProductCatalog.Application.Exceptions;
 using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Catalog.Entities;
 using ProductCatalog.Domain.Order.Entities;
 using ProductCatalog.Domain.Payment.Entities;
+using ProductCatalog.Infrastructure.Outbox;
 
 namespace ProductCatalog.Infrastructure;
 
 public sealed class ApplicationDbContext : DbContext, IUnitOfWork
 {
-    private readonly IPublisher _publisher;
-    public ApplicationDbContext(
-        DbContextOptions options,
-        IPublisher publisher)
+    private static readonly JsonSerializerSettings _jsonSerializerSettings = new()
+    {
+        TypeNameHandling = TypeNameHandling.All
+    };
+
+    public ApplicationDbContext(DbContextOptions options)
         : base(options)
     {
-        _publisher = publisher;
     }
 
     public DbSet<Product> Products => Set<Product>();
@@ -29,7 +31,7 @@ public sealed class ApplicationDbContext : DbContext, IUnitOfWork
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
-        
+
         base.OnModelCreating(modelBuilder);
     }
 
@@ -37,9 +39,9 @@ public sealed class ApplicationDbContext : DbContext, IUnitOfWork
     {
         try
         {
-            var result = await base.SaveChangesAsync(cancellationToken);
+            AddDomainEventsAsOutboxMessages();
 
-            await PublishDomainEventsAsync(cancellationToken);
+            var result = await base.SaveChangesAsync(cancellationToken);
 
             return result;
         }
@@ -49,24 +51,27 @@ public sealed class ApplicationDbContext : DbContext, IUnitOfWork
         }
     }
 
-    private async Task PublishDomainEventsAsync(CancellationToken cancellationToken)
+    private void AddDomainEventsAsOutboxMessages()
     {
-        var domainEvents = ChangeTracker
+        var outboxMessages = ChangeTracker
              .Entries<Entity>()
+             .ToList()
              .Select(e => e.Entity)
              .SelectMany(e =>
              {
-                 var domainEvents = e.GetDomainEvents();
+                 var domainEvents = e.GetDomainEvents().ToList();
 
                  e.ClearDomainEvents();
 
                  return domainEvents;
              })
+             .Select(e => new OutboxMessage(
+                 Guid.NewGuid(),
+                 DateTime.UtcNow,
+                 e.GetType().Name,
+                 JsonConvert.SerializeObject(e, _jsonSerializerSettings)))
              .ToList();
 
-        foreach (var domainEvent in domainEvents)
-        {
-            await _publisher.Publish(domainEvent, cancellationToken);
-        }
+        AddRange(outboxMessages);
     }
 }

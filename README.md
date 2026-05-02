@@ -1,31 +1,39 @@
-Product Catalog System
+ ProductCatalog
 
-A .NET backend application built with Clean Architecture, Domain-Driven Design (DDD), CQRS, and MediatR, demonstrating a modular and maintainable service design.
-The system manages products, orders, and payments, enforcing business rules through rich domain models and explicit state transitions.
+  A full-stack e-commerce backend API built with .NET 10 and ASP.NET Core Minimal APIs, designed as a learning project targeting senior-level .NET engineering         patterns.
+  A product catalog and order management system for a tech store — supporting product and category management, customer orders, and payment processing.
 
-Architecture
-The solution is structured into four layers:
+  Tech Stack
+  .NET 10 
+  ·ASP.NET Core Minimal APIs
+  ·PostgreSQL 
+  ·EF Core 10 
+  ·MediatR
+  ·FluentValidation 
+  ·Keycloak 
+  ·Redis 
+  ·Serilog
+  ·Quartz.NET 
+  ·Docker
 
-Domain
-Contains the core business model with aggregates (Product, Order, Payment), value objects (Money, Currency, Sku), domain events, and centralized domain error definitions. All business rules and invariants are enforced here through behavior methods returning Result/Result<T>.
+  Features & Patterns
 
-Application
-Implements use cases using CQRS with MediatR, separating commands and queries, applying validation, and orchestrating domain operations.
+  Architecture
+  - Clean Architecture with strict layer separation (Domain → Application → Infrastructure → API)
+  - Domain-Driven Design — rich aggregates (Product, Order, Payment), value objects (Money, Currency, Sku, CustomerId), domain events
+  - CQRS via MediatR — separate command/query handlers per use case
+  - Result pattern — Result<T> + typed errors instead of exceptions in domain/application layers
+  - Repository pattern with optimistic concurrency (xmin rowversion on all aggregates)
 
-Infrastructure
-Provides technical implementations such as Entity Framework Core persistence, repository implementations, optimistic concurrency control, domain event dispatching, and PostgreSQL integration.
+  Infrastructure
+  - JWT Bearer authentication via Keycloak (OIDC, role-based policies)
+  - Transactional Outbox pattern — domain events persisted atomically with aggregate changes, processed by a Quartz.NET background job
+  - Redis distributed caching with MediatR pipeline opt-in (ICachedQuery) and domain-event-driven cache invalidation
+  - Structured logging with Serilog, Seq sink, correlation ID and user context enrichment
+  - Health checks for PostgreSQL, Redis, and Keycloak
+  - API versioning (/api/v1/)
 
-API
-Exposes the system through ASP.NET Core Minimal APIs, organized by feature with standardized HTTP responses, global exception handling, and Dockerized deployment.
-
-Key Features
-Clean Architecture with strict layer boundaries
-Rich domain model with entities and value objects
-CQRS pattern using MediatR
-Domain events for side-effect orchestration
-Result pattern for predictable error handling
-FluentValidation for request validation
-EF Core with optimistic concurrency
-PostgreSQL persistence
-Containerized runtime with Docker
-Consistent API error handling using ProblemDetails
+  Domain
+  - Product catalog — products, categories, features, lifecycle status
+  - Orders — creation, submission for payment, cancellation, resource ownership enforcement
+  - Payments — initiation, success/failure simulation, idempotency key support

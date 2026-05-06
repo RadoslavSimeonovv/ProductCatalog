@@ -6,6 +6,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Dapper;
+using Quartz;
 using ProductCatalog.Application.Abstractions.Authentication;
 using ProductCatalog.Application.Abstractions.Caching;
 using ProductCatalog.Application.Abstractions.Email;
@@ -13,6 +15,7 @@ using ProductCatalog.Application.Data;
 using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Catalog.Repositories;
 using ProductCatalog.Domain.Order.Repositories;
+using ProductCatalog.Domain.Payment.Enums;
 using ProductCatalog.Domain.Payment.Repositories;
 using ProductCatalog.Infrastructure.Authentication;
 using ProductCatalog.Infrastructure.Caching;
@@ -20,7 +23,6 @@ using ProductCatalog.Infrastructure.Data;
 using ProductCatalog.Infrastructure.Email;
 using ProductCatalog.Infrastructure.Outbox;
 using ProductCatalog.Infrastructure.Repositories;
-using Quartz;
 
 using ApplicationRoles = ProductCatalog.Application.Abstractions.Authentication.Roles;
 
@@ -81,6 +83,9 @@ public static class DependencyInjection
 
         services.AddSingleton<ISqlConnectionFactory>(_ =>
             new SqlConnectionFactory(connectionString));
+
+        DefaultTypeMap.MatchNamesWithUnderscores = true;
+        SqlMapper.AddTypeHandler(new StringEnumTypeHandler<PaymentStatus>());
     }
 
     private static void AddAuthentication(this IServiceCollection services, IConfiguration configuration)

@@ -1,10 +1,8 @@
-﻿using ProductCatalog.Application.Catalog.Responses;
+using ProductCatalog.Application.Catalog.Responses;
 
 namespace ProductCatalog.Application.Catalog.GetProductFeatures;
 
-public sealed class GetProductFeaturesQueryResponse
-{
-    public Guid ProductId { get; init; }
-    public required string ProductName { get; init; }
-    public required IReadOnlyList<ProductFeatureResponse> Features { get; init; }
-}
+public sealed record GetProductFeaturesQueryResponse(
+    Guid ProductId,
+    string ProductName,
+    IReadOnlyList<ProductFeatureResponse> Features);

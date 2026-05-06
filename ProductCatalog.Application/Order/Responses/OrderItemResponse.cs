@@ -1,9 +1,7 @@
-﻿namespace ProductCatalog.Application.Order.Responses;
+namespace ProductCatalog.Application.Order.Responses;
 
-public sealed class OrderItemResponse
-{
-    public Guid ProductId { get; init; }
-    public int Quantity { get; init; }
-    public decimal UnitPrice { get; init; }
-    public required string Currency { get; init; }
-}
+public sealed record OrderItemResponse(
+    Guid ProductId,
+    int Quantity,
+    decimal UnitPrice,
+    string Currency);

@@ -1,35 +1,33 @@
-﻿using ProductCatalog.Application.Abstractions.Messaging;
+using Dapper;
+using ProductCatalog.Application.Abstractions.Messaging;
 using ProductCatalog.Application.Catalog.Responses;
+using ProductCatalog.Application.Data;
 using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Catalog.Errors;
-using ProductCatalog.Domain.Catalog.Repositories;
 
 namespace ProductCatalog.Application.Catalog.GetCategoryById;
 
-internal sealed class GetCategoryByIdQueryHandler
+internal sealed class GetCategoryByIdQueryHandler(ISqlConnectionFactory sqlConnectionFactory)
     : IQueryHandler<GetCategoryByIdQuery, ProductCategoryResponse>
 {
-    private readonly IProductCategoryRepository _productCategoryRepository;
-    public GetCategoryByIdQueryHandler(IProductCategoryRepository productCategoryRepository)
-    {
-        _productCategoryRepository = productCategoryRepository;
-    }
-
     public async Task<Result<ProductCategoryResponse>> Handle(
-        GetCategoryByIdQuery request, 
+        GetCategoryByIdQuery request,
         CancellationToken cancellationToken)
     {
-        var category = await _productCategoryRepository
-            .GetByIdAsync(request.Id, cancellationToken);
+        using var connection = sqlConnectionFactory.CreateConnection();
+
+        const string sql = """
+            SELECT id, name, description
+            FROM product_categories
+            WHERE id = @Id
+            """;
+
+        var category = await connection.QueryFirstOrDefaultAsync<ProductCategoryResponse>(
+            new CommandDefinition(sql, new { request.Id }, cancellationToken: cancellationToken));
 
         if (category is null)
             return Result.Failure<ProductCategoryResponse>(ProductErrors.CategoryNotFound);
 
-        return Result.Success(new ProductCategoryResponse
-        {
-            Id = category.Id,
-            Name = category.Name,
-            Description = category.Description
-        });
+        return Result.Success(category);
     }
 }

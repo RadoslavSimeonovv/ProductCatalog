@@ -1,15 +1,13 @@
-﻿using ProductCatalog.Domain.Payment.Enums;
+using ProductCatalog.Domain.Payment.Enums;
 
 namespace ProductCatalog.Application.Payment;
 
-public sealed class PaymentResponse
-{
-    public Guid PaymentId { get; init; }
-    public Guid OrderId { get; init; }
-    public required string CustomerId { get; init; }
-    public decimal Amount { get; init; }
-    public required string Currency { get; init; }
-    public required string Provider { get; init; }
-    public string? ProviderReference { get; init; }
-    public required PaymentStatus Status { get; init; }
-}
+public sealed record PaymentResponse(
+    Guid PaymentId,
+    Guid OrderId,
+    string CustomerId,
+    decimal Amount,
+    string Currency,
+    string Provider,
+    string? ProviderReference,
+    PaymentStatus Status);

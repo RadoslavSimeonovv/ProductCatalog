@@ -6,26 +6,16 @@ using ProductCatalog.Domain.Catalog.Repositories;
 
 namespace ProductCatalog.Application.Catalog.GetAllCategories;
 
-internal sealed class GetAllCategoriesQueryHandler
+internal sealed class GetAllCategoriesQueryHandler(IProductCategoryRepository productCategoryRepository)
     : IQueryHandler<GetAllCategoriesQuery, IReadOnlyList<ProductCategoryResponse>>
 {
-    private readonly IProductCategoryRepository _productCategoryRepository;
-    public GetAllCategoriesQueryHandler(IProductCategoryRepository productCategoryRepository)
-    {
-        _productCategoryRepository = productCategoryRepository;
-    }
     public async Task<Result<IReadOnlyList<ProductCategoryResponse>>> Handle(
-        GetAllCategoriesQuery request, 
+        GetAllCategoriesQuery request,
         CancellationToken cancellationToken)
     {
-        var categories = await _productCategoryRepository
+        var categories = await productCategoryRepository
             .Query()
-            .Select(c => new ProductCategoryResponse
-            {
-                Id = c.Id,
-                Name = c.Name,
-                Description = c.Description
-            })
+            .Select(c => new ProductCategoryResponse(c.Id, c.Name, c.Description))
             .ToListAsync(cancellationToken);
 
         return Result.Success<IReadOnlyList<ProductCategoryResponse>>(categories);

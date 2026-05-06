@@ -1,54 +1,54 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Dapper;
 using ProductCatalog.Application.Abstractions.Authentication;
 using ProductCatalog.Application.Abstractions.Messaging;
+using ProductCatalog.Application.Data;
 using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Order.Errors;
-using ProductCatalog.Domain.Order.Repositories;
-using ProductCatalog.Domain.Payment.Repositories;
 
 namespace ProductCatalog.Application.Payment.GetPaymentsByOrderId;
 
-internal sealed class GetPaymentsByOrderIdQueryHandler : IQueryHandler<GetPaymentsByOrderIdQuery, IReadOnlyList<PaymentResponse>>
+internal sealed class GetPaymentsByOrderIdQueryHandler(ISqlConnectionFactory sqlConnectionFactory, ICurrentUser currentUser)
+    : IQueryHandler<GetPaymentsByOrderIdQuery, IReadOnlyList<PaymentResponse>>
 {
-    private readonly IPaymentRepository _paymentRepository;
-    private readonly IOrderRepository _orderRepository;
-    private readonly ICurrentUser _currentUser;
-
-    public GetPaymentsByOrderIdQueryHandler(
-        IPaymentRepository paymentRepository,
-        IOrderRepository orderRepository,
-        ICurrentUser currentUser)
+    public async Task<Result<IReadOnlyList<PaymentResponse>>> Handle(
+        GetPaymentsByOrderIdQuery request,
+        CancellationToken cancellationToken)
     {
-        _paymentRepository = paymentRepository;
-        _orderRepository = orderRepository;
-        _currentUser = currentUser;
-    }
-    public async Task<Result<IReadOnlyList<PaymentResponse>>> Handle(GetPaymentsByOrderIdQuery request, CancellationToken cancellationToken)
-    {
-        var order = await _orderRepository.GetByIdAsync(request.OrderId, cancellationToken);
+        using var connection = sqlConnectionFactory.CreateConnection();
 
-        if (order is null)
+        const string ownerSql = """
+            SELECT customer_id
+            FROM orders
+            WHERE id = @OrderId
+            """;
+
+        var customerId = await connection.QueryFirstOrDefaultAsync<string>(
+            new CommandDefinition(ownerSql, new { request.OrderId }, cancellationToken: cancellationToken));
+
+        if (customerId is null)
             return Result.Failure<IReadOnlyList<PaymentResponse>>(OrderErrors.NotFound);
 
-        if (!_currentUser.IsInRole(Roles.Admin) && order.CustomerId.Value != _currentUser.UserId)
+        if (!currentUser.IsInRole(Roles.Admin) && customerId != currentUser.UserId)
             return Result.Failure<IReadOnlyList<PaymentResponse>>(OrderErrors.Unauthorized);
 
-        var paymentsResponse = await _paymentRepository.GetPaymentsByOrderId(request.OrderId)
-            .AsNoTracking()
-            .OrderByDescending(p => p.CreatedAt)
-            .Select(p => new PaymentResponse
-            {
-                PaymentId = p.Id,
-                OrderId = p.OrderId,
-                CustomerId = p.CustomerId.Value,
-                Amount = p.Amount.Amount,
-                Currency = p.Amount.Currency.Code,
-                Provider = p.Provider,
-                ProviderReference = p.ProviderReference,
-                Status = p.Status,
-            })
-            .ToListAsync(cancellationToken);
+        const string paymentsSql = """
+            SELECT
+                id                 AS PaymentId,
+                order_id           AS OrderId,
+                customer_id        AS CustomerId,
+                amount             AS Amount,
+                currency           AS Currency,
+                provider           AS Provider,
+                provider_reference AS ProviderReference,
+                status             AS Status
+            FROM payments
+            WHERE order_id = @OrderId
+            ORDER BY created_at DESC
+            """;
 
-        return Result.Success<IReadOnlyList<PaymentResponse>>(paymentsResponse);
+        var payments = await connection.QueryAsync<PaymentResponse>(
+            new CommandDefinition(paymentsSql, new { request.OrderId }, cancellationToken: cancellationToken));
+
+        return Result.Success<IReadOnlyList<PaymentResponse>>(payments.ToList());
     }
 }

@@ -1,43 +1,44 @@
-﻿using ProductCatalog.Application.Abstractions.Authentication;
+using Dapper;
+using ProductCatalog.Application.Abstractions.Authentication;
 using ProductCatalog.Application.Abstractions.Messaging;
+using ProductCatalog.Application.Data;
 using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Payment.Errors;
-using ProductCatalog.Domain.Payment.Repositories;
 
 namespace ProductCatalog.Application.Payment.GetPaymentById;
 
-internal sealed class GetPaymentByIdQueryHandler : IQueryHandler<GetPaymentByIdQuery, PaymentResponse?>
+internal sealed class GetPaymentByIdQueryHandler(ISqlConnectionFactory sqlConnectionFactory, ICurrentUser currentUser)
+    : IQueryHandler<GetPaymentByIdQuery, PaymentResponse>
 {
-    private readonly IPaymentRepository _paymentRepository;
-    private readonly ICurrentUser _currentUser;
+    public async Task<Result<PaymentResponse>> Handle(
+        GetPaymentByIdQuery request,
+        CancellationToken cancellationToken)
+    {
+        using var connection = sqlConnectionFactory.CreateConnection();
 
-    public GetPaymentByIdQueryHandler(IPaymentRepository paymentRepository, ICurrentUser currentUser)
-    {
-        _paymentRepository = paymentRepository;
-        _currentUser = currentUser;
-    }
-    public async Task<Result<PaymentResponse?>> Handle(GetPaymentByIdQuery request, CancellationToken cancellationToken)
-    {
-        var payment = await _paymentRepository.GetByIdAsync(request.PaymentId, cancellationToken);
+        const string sql = """
+            SELECT
+                id                 AS PaymentId,
+                order_id           AS OrderId,
+                customer_id        AS CustomerId,
+                amount             AS Amount,
+                currency           AS Currency,
+                provider           AS Provider,
+                provider_reference AS ProviderReference,
+                status             AS Status
+            FROM payments
+            WHERE id = @PaymentId
+            """;
+
+        var payment = await connection.QueryFirstOrDefaultAsync<PaymentResponse>(
+            new CommandDefinition(sql, new { request.PaymentId }, cancellationToken: cancellationToken));
 
         if (payment is null)
-            return Result.Failure<PaymentResponse?>(PaymentErrors.NotFound);
+            return Result.Failure<PaymentResponse>(PaymentErrors.NotFound);
 
-        if (!_currentUser.IsInRole(Roles.Admin) && payment.CustomerId.Value != _currentUser.UserId)
-            return Result.Failure<PaymentResponse?>(PaymentErrors.Unauthorized);
+        if (!currentUser.IsInRole(Roles.Admin) && payment.CustomerId != currentUser.UserId)
+            return Result.Failure<PaymentResponse>(PaymentErrors.Unauthorized);
 
-        var response = new PaymentResponse()
-        {
-            PaymentId = payment.Id,
-            OrderId = payment.OrderId,
-            Status = payment.Status,
-            CustomerId = payment.CustomerId.Value,
-            Amount = payment.Amount.Amount,
-            Currency = payment.Amount.Currency.Code,
-            Provider = payment.Provider,
-            ProviderReference = payment.ProviderReference
-        };
-
-        return Result.Success(response)!;
+        return Result.Success(payment);
     }
 }

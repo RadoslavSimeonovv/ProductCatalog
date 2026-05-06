@@ -1,47 +1,51 @@
-﻿using ProductCatalog.Application.Abstractions.Authentication;
+using Dapper;
+using ProductCatalog.Application.Abstractions.Authentication;
 using ProductCatalog.Application.Abstractions.Messaging;
+using ProductCatalog.Application.Data;
 using ProductCatalog.Application.Order.Responses;
 using ProductCatalog.Domain.Abstractions;
 using ProductCatalog.Domain.Order.Errors;
-using ProductCatalog.Domain.Order.Repositories;
 
 namespace ProductCatalog.Application.Order.GetOrderById;
 
-internal sealed class GetOrderByIdQueryHandler : IQueryHandler<GetOrderByIdQuery, OrderResponse>
+internal sealed class GetOrderByIdQueryHandler(ISqlConnectionFactory sqlConnectionFactory, ICurrentUser currentUser)
+    : IQueryHandler<GetOrderByIdQuery, OrderResponse>
 {
-    private readonly IOrderRepository _orderRepository;
-    private readonly ICurrentUser _currentUser;
-
-    public GetOrderByIdQueryHandler(IOrderRepository orderRepository, ICurrentUser currentUser)
+    public async Task<Result<OrderResponse>> Handle(
+        GetOrderByIdQuery request,
+        CancellationToken cancellationToken)
     {
-        _orderRepository = orderRepository;
-        _currentUser = currentUser;
-    }
-    public async Task<Result<OrderResponse>> Handle(GetOrderByIdQuery request, CancellationToken cancellationToken)
-    {
-        var order = await _orderRepository.GetByIdAsync(request.Id, cancellationToken);
+        using var connection = sqlConnectionFactory.CreateConnection();
 
-        if (order is null)
+        const string orderSql = """
+            SELECT id, customer_id, customer_email, status
+            FROM orders
+            WHERE id = @Id
+            """;
+
+        var order = await connection.QueryFirstOrDefaultAsync<(Guid Id, string CustomerId, string CustomerEmail, string Status)>(
+            new CommandDefinition(orderSql, new { request.Id }, cancellationToken: cancellationToken));
+
+        if (order == default)
             return Result.Failure<OrderResponse>(OrderErrors.NotFound);
 
-        if (!_currentUser.IsInRole(Roles.Admin) && order.CustomerId.Value != _currentUser.UserId)
+        if (!currentUser.IsInRole(Roles.Admin) && order.CustomerId != currentUser.UserId)
             return Result.Failure<OrderResponse>(OrderErrors.Unauthorized);
 
-        var orderResponse = new OrderResponse()
-        {
-            Id = order.Id,
-            CustomerId = order.CustomerId.Value,
-            CustomerEmail = order.CustomerEmail,
-            Status = order.Status.ToString(),
-            Items = order.Items.Select(i => new OrderItemResponse()
-            {
-                ProductId = i.ProductId,
-                Quantity = i.Quantity,
-                UnitPrice = i.UnitPrice.Amount,
-                Currency = i.UnitPrice.Currency.Code
-            }).ToList()
-        };
+        const string itemsSql = """
+            SELECT product_id, quantity, unit_price_amount AS UnitPrice, unit_price_currency AS Currency
+            FROM order_items
+            WHERE order_id = @Id
+            """;
 
-        return Result.Success(orderResponse);
+        var items = await connection.QueryAsync<OrderItemResponse>(
+            new CommandDefinition(itemsSql, new { request.Id }, cancellationToken: cancellationToken));
+
+        return Result.Success(new OrderResponse(
+            order.Id,
+            order.CustomerId,
+            order.CustomerEmail,
+            order.Status,
+            items.ToList()));
     }
 }

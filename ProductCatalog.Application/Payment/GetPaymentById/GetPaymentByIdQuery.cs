@@ -2,5 +2,5 @@
 
 namespace ProductCatalog.Application.Payment.GetPaymentById;
 
-public sealed record GetPaymentByIdQuery(Guid PaymentId) 
-    : IQuery<PaymentResponse?>;
+public sealed record GetPaymentByIdQuery(Guid PaymentId)
+    : IQuery<PaymentResponse>;

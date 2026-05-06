@@ -1,8 +1,6 @@
-﻿namespace ProductCatalog.Application.Catalog.Responses;
+namespace ProductCatalog.Application.Catalog.Responses;
 
-public sealed class ProductCategoryResponse
-{
-    public Guid Id { get; init; }
-    public required string Name { get; init; }
-    public string? Description { get; init; }
-}
+public sealed record ProductCategoryResponse(
+    Guid Id,
+    string Name,
+    string? Description);

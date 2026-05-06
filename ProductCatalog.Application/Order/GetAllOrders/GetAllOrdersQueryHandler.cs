@@ -1,40 +1,54 @@
-﻿using ProductCatalog.Application.Abstractions.Messaging;
+using Dapper;
+using ProductCatalog.Application.Abstractions.Messaging;
+using ProductCatalog.Application.Data;
 using ProductCatalog.Application.Order.Responses;
 using ProductCatalog.Domain.Abstractions;
-using ProductCatalog.Domain.Order.Repositories;
 
 namespace ProductCatalog.Application.Order.GetAllOrders;
 
-internal sealed class GetAllOrdersQueryHandler : IQueryHandler<GetAllOrdersQuery, List<OrderResponse>>
+internal sealed class GetAllOrdersQueryHandler(ISqlConnectionFactory sqlConnectionFactory)
+    : IQueryHandler<GetAllOrdersQuery, List<OrderResponse>>
 {
-    private readonly IOrderRepository _orderRepository;
-
-    public GetAllOrdersQueryHandler(IOrderRepository orderRepository)
+    public async Task<Result<List<OrderResponse>>> Handle(
+        GetAllOrdersQuery request,
+        CancellationToken cancellationToken)
     {
-        _orderRepository = orderRepository;
-    }
-    public async Task<Result<List<OrderResponse>>> Handle(GetAllOrdersQuery request, CancellationToken cancellationToken)
-    {
-        var orders = await _orderRepository.GetAllAsync(cancellationToken);
+        using var connection = sqlConnectionFactory.CreateConnection();
 
-        if (orders.Count == 0)
-            return Result.Success(new List<OrderResponse>());
+        const string sql = """
+            SELECT
+                o.id             AS Id,
+                o.customer_id    AS CustomerId,
+                o.customer_email AS CustomerEmail,
+                o.status         AS Status,
+                i.product_id     AS ProductId,
+                i.quantity       AS Quantity,
+                i.unit_price_amount    AS UnitPrice,
+                i.unit_price_currency  AS Currency
+            FROM orders o
+            LEFT JOIN order_items i ON i.order_id = o.id
+            ORDER BY o.created_at DESC
+            """;
 
-        var orderResponses = orders.Select(order => new OrderResponse
-        {
-            Id = order.Id,
-            CustomerEmail = order.CustomerEmail,
-            CustomerId = order.CustomerId.Value,
-            Status = order.Status.ToString(),
-            Items = order.Items.Select(item => new OrderItemResponse
-            {
-                ProductId = item.ProductId,
-                Quantity = item.Quantity,
-                UnitPrice = item.UnitPrice.Amount,
-                Currency = item.UnitPrice.Currency.Code
-            }).ToList()
-        }).ToList();
+        var rows = (await connection.QueryAsync<OrderRow>(
+            new CommandDefinition(sql, cancellationToken: cancellationToken))).ToList();
 
-        return Result.Success(orderResponses);
+        var orders = rows
+            .GroupBy(r => r.Id)
+            .Select(g => new OrderResponse(
+                g.Key,
+                g.First().CustomerId,
+                g.First().CustomerEmail,
+                g.First().Status,
+                g.Where(r => r.ProductId.HasValue)
+                 .Select(r => new OrderItemResponse(
+                     r.ProductId!.Value,
+                     r.Quantity!.Value,
+                     r.UnitPrice!.Value,
+                     r.Currency!))
+                 .ToList()))
+            .ToList();
+
+        return Result.Success(orders);
     }
 }

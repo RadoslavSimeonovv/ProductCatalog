@@ -8,17 +8,14 @@ using ProductCatalog.Application.Abstractions.Messaging;
 
 namespace ProductCatalog.Application.Catalog.GetProducts;
 
-internal sealed class GetProductsQueryHandler : IQueryHandler<GetProductsQuery, PagedResult<ProductResponse>>
+internal sealed class GetProductsQueryHandler(IProductRepository productRepository)
+    : IQueryHandler<GetProductsQuery, PagedResult<ProductResponse>>
 {
-    private readonly IProductRepository _productRepository;
-    public GetProductsQueryHandler(IProductRepository productRepository)
+    public async Task<Result<PagedResult<ProductResponse>>> Handle(
+        GetProductsQuery request,
+        CancellationToken cancellationToken)
     {
-        _productRepository = productRepository;
-    }
-
-    public async Task<Result<PagedResult<ProductResponse>>> Handle(GetProductsQuery request, CancellationToken cancellationToken)
-    {
-        var products = _productRepository.QueryWithCategory();
+        var products = productRepository.QueryWithCategory();
 
         var page = request.PageNumber is < 1 ? 1 : request.PageNumber;
         var pageSize = request.PageSize is < 1 ? 10 : request.PageSize;
@@ -51,14 +48,15 @@ internal sealed class GetProductsQueryHandler : IQueryHandler<GetProductsQuery, 
         var items = await products
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(p => new ProductResponse
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Price = p.Price.Amount,
-                Currency = p.Price.Currency.Code,
-                Sku = p.Sku.Value
-            })
+            .Select(p => new ProductResponse(
+                p.Id,
+                p.Name,
+                p.Description,
+                p.Price.Amount,
+                p.Price.Currency.Code,
+                p.Sku.Value,
+                p.Status.ToString(),
+                p.CategoryId))
             .ToListAsync(cancellationToken);
 
         return Result.Success(new PagedResult<ProductResponse>

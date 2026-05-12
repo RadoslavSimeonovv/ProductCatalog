@@ -15,11 +15,7 @@ internal sealed class OrderRepository : Repository<Order>, IOrderRepository
         => _dbContext
             .Orders
             .Include(o => o.Items)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
 
-    public Task<List<Order>> GetAllAsync(CancellationToken cancellationToken = default)
-        => _dbContext
-            .Orders
-            .Include(o => o.Items)
-            .ToListAsync(cancellationToken);
 }

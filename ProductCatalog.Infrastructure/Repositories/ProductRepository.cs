@@ -27,6 +27,7 @@ internal sealed class ProductRepository : Repository<Product>, IProductRepositor
         => await _dbContext
             .Products
             .Include(p => p.Features)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
 
 }

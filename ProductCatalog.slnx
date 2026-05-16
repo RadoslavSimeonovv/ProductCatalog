@@ -5,7 +5,9 @@
     <Project Path="ProductCatalog.Domain/ProductCatalog.Domain.csproj" />
     <Project Path="ProductCatalog.Infrastructure/ProductCatalog.Infrastructure.csproj" />
   </Folder>
-  <Folder Name="/tests/" />
+  <Folder Name="/tests/">
+    <Project Path="ProductCatalog.UnitTests/ProductCatalog.UnitTests.csproj" />
+  </Folder>
   <Project Path="docker-compose.dcproj">
     <Build />
   </Project>

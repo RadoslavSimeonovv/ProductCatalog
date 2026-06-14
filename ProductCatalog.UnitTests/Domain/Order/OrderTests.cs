@@ -15,7 +15,7 @@ public class OrderTests
     [Fact]
     public void Create_Should_ReturnFailure_WhenOrderIdIsEmpty()
     {
-        // Arrange — items need a valid orderId; Order.Create checks orderId == Guid.Empty before item validation
+        // Arrange
         var items = new List<OrderItem> { OrderData.CreateItem(Guid.NewGuid()) };
 
         // Act
@@ -65,7 +65,7 @@ public class OrderTests
     [Fact]
     public void Create_Should_ReturnFailure_WhenItemOrderIdDoesNotMatchOrderId()
     {
-        // Arrange — item belongs to a different order
+        // Arrange
         var differentOrderId = Guid.NewGuid();
         var items = new List<OrderItem> { OrderData.CreateItem(differentOrderId) };
 
@@ -114,7 +114,7 @@ public class OrderTests
     [Fact]
     public void Create_Should_CalculateTotalAmount_FromItems()
     {
-        // Arrange — 2 items at qty 2 × $10 each = $40 total
+        // Arrange
         var item1 = OrderData.CreateItem(OrderData.OrderId);
         var item2 = OrderData.CreateItem(OrderData.OrderId);
         var items = new List<OrderItem> { item1, item2 };
@@ -165,7 +165,7 @@ public class OrderTests
     [Fact]
     public void SubmitForPayment_Should_ReturnFailure_WhenOrderIsNotCreated()
     {
-        // Arrange — already submitted
+        // Arrange
         var order = OrderData.CreateSubmittedOrder();
 
         // Act
@@ -213,7 +213,7 @@ public class OrderTests
     [Fact]
     public void MarkAsPaid_Should_ReturnFailure_WhenOrderIsNotAwaitingPayment()
     {
-        // Arrange — order is Created, not AwaitingPayment
+        // Arrange
         var order = OrderData.CreateOrder();
 
         // Act
